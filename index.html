@@ -1,61 +1,428 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DRP Coffee | Order Online</title>
 <style>
-:root{--deep:#301044;--purple:#552080;--light:#7139a0;--bg:#f7f3fa;--ink:#24152d;--muted:#766b7d;--white:#fff;--line:#eadff0}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:linear-gradient(135deg,var(--deep),var(--light));color:#fff;padding:24px 18px 28px}
-.wrap{max-width:1100px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.brand{font-size:28px;font-weight:900;letter-spacing:2px}.sub{opacity:.85;font-size:12px;letter-spacing:2px;margin-top:4px}
-button,select,input,textarea{font:inherit}.lang{border:1px solid #ffffff70;background:#ffffff18;color:#fff;padding:9px 13px;border-radius:20px;cursor:pointer}
-.hero{padding:24px 0 4px}.hero h1{font-size:clamp(25px,5vw,42px);margin:0 0 8px}.hero p{margin:0;opacity:.9}
-main{max-width:1100px;margin:22px auto;padding:0 16px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.toolbar input,.toolbar select{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
-.toolbar input{flex:1}.cats{display:flex;gap:8px;overflow:auto;padding:2px 0 14px}.cat{white-space:nowrap;border:1px solid var(--line);background:#fff;color:var(--purple);border-radius:22px;padding:9px 14px;cursor:pointer}.cat.active{background:var(--purple);color:#fff}
-.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.product{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:82px}.pname{font-weight:700}.price{color:var(--purple);font-weight:800;margin-top:6px}.add{background:var(--purple);color:#fff;border:0;border-radius:10px;padding:9px 12px;cursor:pointer;min-width:40px}.cart{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;height:max-content;position:sticky;top:14px}.cart h2{margin:0 0 14px;font-size:21px}.empty{color:var(--muted);font-size:14px;padding:18px 0}.cartitem{display:grid;grid-template-columns:1fr auto;gap:8px;border-bottom:1px solid var(--line);padding:11px 0}.qty{display:flex;align-items:center;gap:8px}.qty button{border:1px solid var(--line);background:#fff;border-radius:8px;width:27px;height:27px;cursor:pointer}.total{display:flex;justify-content:space-between;font-size:19px;font-weight:900;padding:16px 0}.fields{display:grid;gap:9px}.fields input,.fields textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff}.checkout{width:100%;border:0;background:linear-gradient(135deg,var(--purple),var(--light));color:#fff;padding:13px;border-radius:12px;font-weight:800;cursor:pointer}.note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px}
-footer{text-align:center;color:var(--muted);padding:24px;font-size:12px}
-@media(max-width:800px){main{grid-template-columns:1fr}.cart{position:static;grid-row:1}.products{grid-template-columns:1fr 1fr}}
-@media(max-width:460px){.products{grid-template-columns:1fr}.brand{font-size:24px}}
+:root {
+  --deep:#301044;
+  --purple:#552080;
+  --light:#7139a0;
+  --bg:#f7f3fa;
+  --ink:#24152d;
+  --muted:#766b7d;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  font-family:Arial,Tahoma,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+header {
+  background:linear-gradient(135deg,var(--deep),var(--light));
+  color:white;
+  padding:22px 18px;
+}
+.wrap {max-width:1100px;margin:auto}
+.top {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.brand {font-size:30px;font-weight:900;letter-spacing:2px}
+.sub {font-size:11px;letter-spacing:2px;opacity:.8}
+button,input,select {font:inherit}
+button {cursor:pointer}
+.lang,.cartBtn {
+  border:1px solid #ffffff70;
+  background:#ffffff18;
+  color:white;
+  padding:10px 14px;
+  border-radius:12px;
+}
+.hero {padding:28px 0 10px}
+.hero h1 {font-size:35px;margin:0 0 8px}
+.hero p {margin:0;opacity:.85}
+main {
+  max-width:1100px;
+  margin:24px auto;
+  padding:0 16px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 320px;
+  gap:20px;
+}
+.toolbar {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+input {
+  border:1px solid #eadff0;
+  border-radius:12px;
+  padding:12px;
+  background:white;
+  min-width:0;
+}
+#search {flex:1;min-width:150px}
+.cats {
+  display:flex;
+  gap:8px;
+  overflow:auto;
+  margin-bottom:16px;
+}
+.cat {
+  border:1px solid #eadff0;
+  background:white;
+  color:var(--purple);
+  padding:10px 15px;
+  border-radius:30px;
+  white-space:nowrap;
+}
+.cat.active {background:var(--purple);color:white}
+.products {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.product {
+  background:white;
+  padding:16px;
+  border:1px solid #eadff0;
+  border-radius:16px;
+  box-shadow:0 5px 18px #3010440d;
+}
+.product h3 {font-size:16px;margin:0 0 10px}
+.productBottom {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.price {color:var(--purple);font-weight:900}
+.add {
+  background:#f0e6f7;
+  color:var(--purple);
+  border:0;
+  border-radius:10px;
+  padding:9px 12px;
+  font-weight:bold;
+}
+.add:hover {background:var(--purple);color:white}
+.cart {
+  background:white;
+  border:1px solid #eadff0;
+  border-radius:18px;
+  padding:18px;
+  height:max-content;
+  position:sticky;
+  top:15px;
+}
+.cart h2 {margin-top:0}
+.cartItem {
+  padding:12px 0;
+  border-bottom:1px solid #eee5f3;
+}
+.cartLine {
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+}
+.qty {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:8px;
+}
+.qty button {
+  border:0;
+  background:#f0e6f7;
+  color:var(--purple);
+  border-radius:7px;
+  width:27px;
+  height:27px;
+}
+.total {
+  display:flex;
+  justify-content:space-between;
+  font-size:19px;
+  font-weight:bold;
+  color:var(--purple);
+  margin-top:18px;
+}
+.checkout {
+  width:100%;
+  margin-top:16px;
+  padding:14px;
+  border:0;
+  border-radius:12px;
+  color:white;
+  background:linear-gradient(120deg,var(--deep),var(--light));
+  font-weight:bold;
+}
+.empty {color:var(--muted);text-align:center;padding:20px}
+footer {text-align:center;padding:25px;color:var(--muted);font-size:12px}
+@media(max-width:750px) {
+  main {grid-template-columns:1fr}
+  .cart {position:static}
+}
+@media(max-width:420px) {
+  .products {grid-template-columns:1fr}
+  .hero h1 {font-size:27px}
+}
 </style>
 </head>
 <body>
-<header><div class="wrap">
- <div class="top"><div><div class="brand">DRP COFFEE</div><div class="sub">COFFEE BAR · ORDER ONLINE</div></div><button class="lang" id="langBtn">English</button></div>
- <div class="hero"><h1 id="heroTitle">اطلب قهوتك المفضلة</h1><p id="heroSub">اختار من المنيو، أضف للسلة، وجهّز طلبك بسهولة.</p></div>
-</div></header>
+
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div class="brand">DRP</div>
+        <div class="sub">COFFEE BAR · LOYALTY CLUB</div>
+      </div>
+      <div>
+        <button class="lang" id="langBtn">EN</button>
+      </div>
+    </div>
+    <div class="hero">
+      <h1 id="heroTitle">اطلب قهوتك من DRP</h1>
+      <p id="heroText">اختار مشروبك المفضل واستمتع بيومك ☕</p>
+    </div>
+  </div>
+</header>
+
 <main>
-<section>
- <div class="toolbar"><input id="search" placeholder="ابحث عن مشروب..." aria-label="Search"><select id="sort"><option value="default">ترتيب المنيو</option><option value="low">السعر: الأقل أولاً</option><option value="high">السعر: الأعلى أولاً</option></select></div>
- <div class="cats" id="cats"></div><div class="products" id="products"></div>
-</section>
-<aside class="cart">
- <h2 id="cartTitle">سلة الطلبات</h2><div id="cartItems"></div>
- <div class="total"><span id="totalLabel">المجموع</span><span id="total">0.00 JD</span></div>
- <div class="fields"><input id="customer" placeholder="الاسم"><input id="phone" placeholder="رقم الهاتف" inputmode="tel"><textarea id="address" rows="2" placeholder="العنوان / ملاحظات التوصيل"></textarea></div>
- <button class="checkout" id="checkout">تجهيز الطلب</button>
- <div class="note" id="note">هذا نموذج أولي: زر تجهيز الطلب ينسخ ملخص الطلب فقط، ولا يرسل الطلب إلى المحل تلقائياً.</div>
-</aside>
+  <section>
+    <div class="toolbar">
+      <input id="search" placeholder="ابحث عن مشروب...">
+    </div>
+    <div class="cats" id="cats"></div>
+    <div class="products" id="products"></div>
+  </section>
+
+  <aside class="cart">
+    <h2 id="cartTitle">سلة الطلب 🛒</h2>
+    <div id="cartItems"></div>
+    <div class="total">
+      <span id="totalLabel">المجموع</span>
+      <span id="total">0.00 JD</span>
+    </div>
+    <button class="checkout" id="checkout">متابعة الطلب</button>
+  </aside>
 </main>
-<footer>DRP COFFEE · JOD</footer>
+
+<footer>DRP COFFEE · AMMAN, JORDAN</footer>
+
 <script>
-const items=[
-["Strawberry Refresher","ستروبيري ريفريشر",2.50,"Cold Drinks"],["Peach Refresher","بيتش ريفريشر",2.50,"Cold Drinks"],["Strawberry Smoothie","سموذي فراولة",3,"Smoothies"],["Passion Fruit Smoothie","سموذي باشن فروت",3,"Smoothies"],["Mango Smoothie","سموذي مانجا",3,"Smoothies"],["Blue Curacao","بلو كوراكاو",2.50,"Cold Drinks"],["Mojito Red Bull","موهيتو ريد بول",3.50,"Cold Drinks"],["Iced Tea","آيس تي",2,"Cold Drinks"],["Matcha Latte","ماتشا لاتيه",3,"Cold Drinks"],["Strawberry Matcha","ستروبيري ماتشا",3.50,"Cold Drinks"],["Strawberry Lemonade","ليمونادة فراولة",2.25,"Cold Drinks"],["Mango Matcha","مانجا ماتشا",3.50,"Cold Drinks"],["Watermelon","بطيخ",2,"Cold Drinks"],["Iced Chocolate","آيس شوكولاتة",2.50,"Cold Drinks"],["Crunch Cookies","كرنش كوكيز",2.75,"Desserts"],["Choco Ferrero","تشوكو فيريرو",3.50,"Desserts"],["Lazez Kinder","ليزيز كيندر",2.75,"Desserts"],["Tiramisu","تيراميسو",2,"Desserts"],["Lazez Pistachio","ليزيز فستق",2.50,"Desserts"],["Lazez Strawberry","ليزيز فراولة",2.50,"Desserts"],["Lazez Blueberry","ليزيز بلو بيري",2.50,"Desserts"],["Lazez Lotus","ليزيز لوتس",2.50,"Desserts"],["Lazez Small","ليزيز صغير",3,"Desserts"],["Lazez Large","ليزيز كبير",5,"Desserts"],["Lazloz Strawberry","لزلوز فراولة",3,"Desserts"],["Lazloz Mango","لزلوز مانجا",3,"Desserts"],["Watermelon Crunch","ووترميلون كرنش",2,"Desserts"],
-["V60","V60",3,"Coffee"],["Iced Americano","آيس أمريكانو",1.50,"Coffee"],["Milkshake Coffee","ميلك شيك قهوة",3.25,"Milkshakes"],["Milkshake Caramel","ميلك شيك كراميل",3.25,"Milkshakes"],["Iced Latte","آيس لاتيه",2,"Coffee"],["Spanish Latte","سبانيش لاتيه",2.25,"Coffee"],["Pistachio Latte","لاتيه فستق",2.25,"Coffee"],["Caramel Latte","كراميل لاتيه",2.25,"Coffee"],["Caramel Macchiato","كراميل ماكياتو",2.75,"Coffee"],["Dark Mocha","دارك موكا",2.75,"Coffee"],["White Mocha","وايت موكا",2.75,"Coffee"],["Matcha Frappe","ماتشا فرابيه",3,"Frappe"],["Frappe Vanilla","فرابيه فانيلا",3.50,"Frappe"],["Frappe Chocolate","فرابيه شوكولاتة",3.50,"Frappe"],["Frappe Caramel","فرابيه كراميل",3.50,"Frappe"],["Salted Caramel","سولتد كراميل",2.50,"Coffee"],
-["Espresso","إسبريسو",1,"Hot Coffee"],["Turkish Coffee","قهوة تركية",1,"Hot Coffee"],["American","أمريكان",1.50,"Hot Coffee"],["Flat White","فلات وايت",2,"Hot Coffee"],["Americano","أمريكانو",1.50,"Hot Coffee"],["Cinnamon Spice Latte","سينامون سبايس لاتيه",2.50,"Hot Coffee"],["Coffee Latte","كافيه لاتيه",2,"Hot Coffee"],["Spanish Latte","سبانيش لاتيه",2.25,"Hot Coffee"],["Caramel Latte","كراميل لاتيه",2.25,"Hot Coffee"],["Dark Mocha","دارك موكا",2.75,"Hot Coffee"],["White Mocha","وايت موكا",2.75,"Hot Coffee"],["Cappuccino","كابتشينو",1.75,"Hot Coffee"],["V60","V60",3,"Hot Coffee"],["Hot Chocolate","هوت شوكولاتة",2,"Hot Coffee"],["Hot Choco Marshmallow","هوت شوكو مارشميلو",2.50,"Hot Coffee"],["Matcha Latte","ماتشا لاتيه",3,"Hot Coffee"],["Hot Pistachio","هوت فستق",2.25,"Hot Coffee"],["Hot Caramel Macchiato","هوت كراميل ماكياتو",2.75,"Hot Coffee"]
-].map((x,i)=>({id:i,en:x[0],ar:x[1],price:x[2],cat:x[3]}));
-let lang="ar", category="All", cart={};
-const $=id=>document.getElementById(id), money=n=>n.toFixed(2)+" JD";
-function t(ar,en){return lang==="ar"?ar:en}
-function categories(){let cats=["All",...new Set(items.map(x=>x.cat))];$("cats").innerHTML=cats.map(c=>`<button class="cat ${category===c?"active":""}" data-cat="${c}">${c==="All"?t("الكل","All"):c}</button>`).join("");document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{category=b.dataset.cat;render()})}
-function renderProducts(){let q=$("search").value.trim().toLowerCase(),list=items.filter(p=>(category==="All"||p.cat===category)&&(!q||(p.en+" "+p.ar).toLowerCase().includes(q)));if($("sort").value==="low")list.sort((a,b)=>a.price-b.price);if($("sort").value==="high")list.sort((a,b)=>b.price-a.price);$("products").innerHTML=list.map(p=>`<article class="product"><div><div class="pname">${lang==="ar"?p.ar:p.en}</div><div class="price">${money(p.price)}</div></div><button class="add" data-add="${p.id}" aria-label="Add">+</button></article>`).join("")||`<p>${t("ما لقينا نتائج","No results found")}</p>`;document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{cart[b.dataset.add]=(cart[b.dataset.add]||0)+1;renderCart()})}
-function renderCart(){let entries=Object.entries(cart).filter(([id,q])=>q>0);$("cartItems").innerHTML=entries.length?entries.map(([id,q])=>{let p=items[+id];return `<div class="cartitem"><div><b>${lang==="ar"?p.ar:p.en}</b><div class="price">${money(p.price*q)}</div></div><div class="qty"><button data-dec="${id}">−</button><span>${q}</span><button data-inc="${id}">+</button></div></div>`}).join(""):`<div class="empty">${t("السلة فارغة حالياً","Your cart is empty")}</div>`;document.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>{let id=b.dataset.dec;cart[id]--;if(cart[id]<=0)delete cart[id];renderCart()});document.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>{let id=b.dataset.inc;cart[id]++;renderCart()});let total=entries.reduce((s,[id,q])=>s+items[+id].price*q,0);$("total").textContent=money(total)}
-function render(){categories();renderProducts();renderCart()}
-function setLang(){document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";$("langBtn").textContent=lang==="ar"?"English":"العربية";$("heroTitle").textContent=t("اطلب قهوتك المفضلة","Order your favorite coffee");$("heroSub").textContent=t("اختار من المنيو، أضف للسلة، وجهّز طلبك بسهولة.","Choose from the menu, add to cart, and prepare your order.");$("cartTitle").textContent=t("سلة الطلبات","Your Cart");$("totalLabel").textContent=t("المجموع","Total");$("search").placeholder=t("ابحث عن مشروب...","Search the menu...");$("customer").placeholder=t("الاسم","Name");$("phone").placeholder=t("رقم الهاتف","Phone number");$("address").placeholder=t("العنوان / ملاحظات التوصيل","Address / delivery notes");$("checkout").textContent=t("تجهيز الطلب","Prepare order");$("note").textContent=t("هذا نموذج أولي: زر تجهيز الطلب ينسخ ملخص الطلب فقط، ولا يرسل الطلب إلى المحل تلقائياً.","Prototype only: this button copies the order summary; it does not send the order to the shop.");render()}
-$("langBtn").onclick=()=>{lang=lang==="ar"?"en":"ar";setLang()};$("search").oninput=renderProducts;$("sort").onchange=renderProducts;
-$("checkout").onclick=async()=>{let entries=Object.entries(cart).filter(([id,q])=>q>0);if(!entries.length){alert(t("أضف منتجات للسلة أولاً","Add items to your cart first"));return}let total=entries.reduce((s,[id,q])=>s+items[+id].price*q,0);let lines=entries.map(([id,q])=>`${items[+id].en} x${q} — ${money(items[+id].price*q)}`);let msg=`DRP COFFEE ORDER\nName: ${$("customer").value}\nPhone: ${$("phone").value}\nAddress: ${$("address").value}\n\n${lines.join("\n")}\n\nTotal: ${money(total)}`;try{await navigator.clipboard.writeText(msg);alert(t("تم نسخ ملخص الطلب. أرسله للمحل لإتمام الطلب.","Order summary copied. Send it to the shop to complete your order."))}catch(e){prompt("Copy your order:",msg)}};
-setLang();
+const items = [
+{cat:"مشروبات باردة",name:"Strawberry Refresher",price:2.50},
+{cat:"مشروبات باردة",name:"Peach Refresher",price:2.50},
+{cat:"مشروبات باردة",name:"Strawberry Smoothie",price:3.00},
+{cat:"مشروبات باردة",name:"Passion Fruit Smoothie",price:3.00},
+{cat:"مشروبات باردة",name:"Mango Smoothie",price:3.00},
+{cat:"مشروبات باردة",name:"Blue Curacao",price:2.50},
+{cat:"مشروبات باردة",name:"Mojito Red Bull",price:3.50},
+{cat:"مشروبات باردة",name:"Iced Tea",price:2.00},
+{cat:"مشروبات باردة",name:"Matcha Latte",price:3.00},
+{cat:"مشروبات باردة",name:"Strawberry Matcha",price:3.50},
+{cat:"مشروبات باردة",name:"Strawberry Lemonade",price:2.25},
+{cat:"مشروبات باردة",name:"Mango Matcha",price:3.50},
+{cat:"مشروبات باردة",name:"Watermelon",price:2.00},
+{cat:"مشروبات باردة",name:"Iced Chocolate",price:2.50},
+{cat:"مشروبات باردة",name:"Crunch Cookies",price:2.75},
+{cat:"مشروبات باردة",name:"Choco Ferrero",price:3.50},
+{cat:"مشروبات باردة",name:"Lazez Kinder",price:2.75},
+{cat:"مشروبات باردة",name:"Tiramisu",price:2.00},
+{cat:"مشروبات باردة",name:"Lazez Pistachio",price:2.50},
+{cat:"مشروبات باردة",name:"Lazez Strawberry",price:2.50},
+{cat:"مشروبات باردة",name:"Lazez Blueberry",price:2.50},
+{cat:"مشروبات باردة",name:"Lazez Lotus",price:2.50},
+{cat:"مشروبات باردة",name:"Lazez Small",price:3.00},
+{cat:"مشروبات باردة",name:"Lazez Large",price:5.00},
+{cat:"مشروبات باردة",name:"Lazloz Strawberry",price:3.00},
+{cat:"مشروبات باردة",name:"Lazloz Mango",price:3.00},
+{cat:"مشروبات باردة",name:"Watermelon Crunch",price:2.00},
+
+{cat:"قهوة باردة",name:"V60",price:3.00},
+{cat:"قهوة باردة",name:"Iced Americano",price:1.50},
+{cat:"قهوة باردة",name:"Milkshake Coffee",price:3.25},
+{cat:"قهوة باردة",name:"Milkshake Caramel",price:3.25},
+{cat:"قهوة باردة",name:"Iced Latte",price:2.00},
+{cat:"قهوة باردة",name:"Spanish Latte",price:2.25},
+{cat:"قهوة باردة",name:"Pistachio Latte",price:2.25},
+{cat:"قهوة باردة",name:"Caramel Latte",price:2.25},
+{cat:"قهوة باردة",name:"Caramel Macchiato",price:2.75},
+{cat:"قهوة باردة",name:"Dark Mocha",price:2.75},
+{cat:"قهوة باردة",name:"White Mocha",price:2.75},
+{cat:"قهوة باردة",name:"Matcha Frappe",price:3.00},
+{cat:"قهوة باردة",name:"Frappe Vanilla",price:3.50},
+{cat:"قهوة باردة",name:"Frappe Chocolate",price:3.50},
+{cat:"قهوة باردة",name:"Frappe Caramel",price:3.50},
+{cat:"قهوة باردة",name:"Salted Caramel",price:2.50},
+
+{cat:"قهوة ساخنة",name:"Espresso",price:1.00},
+{cat:"قهوة ساخنة",name:"Turkish Coffee",price:1.00},
+{cat:"قهوة ساخنة",name:"American",price:1.50},
+{cat:"قهوة ساخنة",name:"Flat White",price:2.00},
+{cat:"قهوة ساخنة",name:"Americano",price:1.50},
+{cat:"قهوة ساخنة",name:"Cinnamon Spice Latte",price:2.50},
+{cat:"قهوة ساخنة",name:"Coffee Latte",price:2.00},
+{cat:"قهوة ساخنة",name:"Spanish Latte",price:2.25},
+{cat:"قهوة ساخنة",name:"Caramel Latte",price:2.25},
+{cat:"قهوة ساخنة",name:"Dark Mocha",price:2.75},
+{cat:"قهوة ساخنة",name:"White Mocha",price:2.75},
+{cat:"قهوة ساخنة",name:"Cappuccino",price:1.75},
+{cat:"قهوة ساخنة",name:"V60",price:3.00},
+{cat:"قهوة ساخنة",name:"Hot Chocolate",price:2.00},
+{cat:"قهوة ساخنة",name:"Hot Choco Marshmallow",price:2.50},
+{cat:"قهوة ساخنة",name:"Matcha Latte",price:3.00},
+{cat:"قهوة ساخنة",name:"Hot Pistachio",price:2.25},
+{cat:"قهوة ساخنة",name:"Hot Caramel Macchiato",price:2.75}
+];
+
+let lang="ar";
+let category="الكل";
+let cart={};
+
+const $ = id => document.getElementById(id);
+const money = n => n.toFixed(2)+" JD";
+const t = (ar,en) => lang==="ar"?ar:en;
+
+function renderCategories(){
+  const cats=["الكل",...new Set(items.map(x=>x.cat))];
+  $("cats").innerHTML=cats.map(c=>`
+    <button class="cat ${category===c?"active":""}" data-cat="${c}">
+      ${lang==="ar"?c:({
+        "الكل":"All",
+        "مشروبات باردة":"Cold Drinks",
+        "قهوة باردة":"Iced Coffee",
+        "قهوة ساخنة":"Hot Coffee"
+      }[c])}
+    </button>
+  `).join("");
+}
+
+function renderProducts(){
+  const q=$("search").value.trim().toLowerCase();
+  const list=items.map((p,i)=>({...p,id:i})).filter(p=>
+    (category==="الكل"||p.cat===category) &&
+    p.name.toLowerCase().includes(q)
+  );
+
+  $("products").innerHTML=list.length?list.map(p=>`
+    <article class="product">
+      <h3>${p.name}</h3>
+      <div class="productBottom">
+        <span class="price">${money(p.price)}</span>
+        <button class="add" data-add="${p.id}">${t("＋ أضف","＋ Add")}</button>
+      </div>
+    </article>
+  `).join(""):`<div class="empty">${t("لا توجد نتائج","No results")}</div>`;
+}
+
+function renderCart(){
+  const entries=Object.entries(cart).filter(([id,q])=>q>0);
+
+  $("cartItems").innerHTML=entries.length?entries.map(([id,q])=>{
+    const p=items[Number(id)];
+    return `
+      <div class="cartItem">
+        <div class="cartLine">
+          <strong>${p.name}</strong>
+          <span>${money(p.price*q)}</span>
+        </div>
+        <div class="qty">
+          <button data-dec="${id}">−</button>
+          <b>${q}</b>
+          <button data-inc="${id}">＋</button>
+        </div>
+      </div>
+    `;
+  }).join(""):`<div class="empty">${t("السلة فارغة","Your cart is empty")}</div>`;
+
+  const total=entries.reduce((sum,[id,q])=>sum+items[Number(id)].price*q,0);
+  $("total").textContent=money(total);
+}
+
+function render(){
+  renderCategories();
+  renderProducts();
+  renderCart();
+}
+
+$("cats").addEventListener("click",e=>{
+  const b=e.target.closest("[data-cat]");
+  if(!b)return;
+  category=b.dataset.cat;
+  render();
+});
+
+$("products").addEventListener("click",e=>{
+  const b=e.target.closest("[data-add]");
+  if(!b)return;
+  const id=b.dataset.add;
+  cart[id]=(cart[id]||0)+1;
+  renderCart();
+});
+
+$("cartItems").addEventListener("click",e=>{
+  const inc=e.target.closest("[data-inc]");
+  const dec=e.target.closest("[data-dec]");
+  if(inc){
+    const id=inc.dataset.inc;
+    cart[id]=(cart[id]||0)+1;
+  }
+  if(dec){
+    const id=dec.dataset.dec;
+    cart[id]--;
+    if(cart[id]<=0)delete cart[id];
+  }
+  renderCart();
+});
+
+$("search").addEventListener("input",renderProducts);
+
+$("langBtn").onclick=()=>{
+  lang=lang==="ar"?"en":"ar";
+  document.documentElement.lang=lang;
+  document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+  $("langBtn").textContent=lang==="ar"?"EN":"عربي";
+  $("heroTitle").textContent=t("اطلب قهوتك من DRP","Order your coffee from DRP");
+  $("heroText").textContent=t(
+    "اختار مشروبك المفضل واستمتع بيومك ☕",
+    "Choose your favorite drink and enjoy your day ☕"
+  );
+  $("cartTitle").textContent=t("سلة الطلب 🛒","Your Cart 🛒");
+  $("totalLabel").textContent=t("المجموع","Total");
+  $("checkout").textContent=t("متابعة الطلب","Continue Order");
+  $("search").placeholder=t("ابحث عن مشروب...","Search drinks...");
+  render();
+};
+
+$("checkout").onclick=()=>{
+  const entries=Object.entries(cart).filter(([id,q])=>q>0);
+  if(!entries.length){
+    alert(t("السلة فارغة! أضف منتجات أولاً.","Your cart is empty!"));
+    return;
+  }
+  const lines=entries.map(([id,q])=>
+    `${items[Number(id)].name} × ${q}`
+  ).join("\n");
+  const total=entries.reduce((sum,[id,q])=>
+    sum+items[Number(id)].price*q,0
+  );
+  alert(
+    t("طلبك:\n","Your order:\n")+
+    lines+"\n\n"+
+    t("المجموع: ","Total: ")+money(total)
+  );
+};
+
+render();
 </script>
-</body></html>
+</body>
+</html>
