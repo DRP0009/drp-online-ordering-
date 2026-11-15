@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DRP | Staff Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg:#160b20;
+  --card:#281435;
+  --purple:#7139a0;
+  --light:#b98add;
+  --white:#fff;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--white);
+}
+header {
+  background:linear-gradient(120deg,#301044,#7139a0);
+  padding:22px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+header h1 {margin:0;font-size:23px}
+header p {margin:6px 0 0;color:#e4c9f5}
+button,select,input {
+  font:inherit;
+  border:0;
+  border-radius:10px;
+  padding:12px;
+}
+button {
+  cursor:pointer;
+  background:var(--purple);
+  color:white;
+  font-weight:bold;
+}
+button:disabled {opacity:.5;cursor:not-allowed}
+.secondary {background:#493057}
+.danger {background:#9b3434}
+main {max-width:1050px;margin:25px auto;padding:0 15px}
+.panel,.order {
+  background:var(--card);
+  border:1px solid #503060;
+  border-radius:17px;
+  padding:20px;
+  margin-bottom:16px;
+}
+input {
+  display:block;
+  width:100%;
+  margin:12px 0;
+  background:#160b20;
+  color:white;
+  border:1px solid #68447c;
+}
+.login {max-width:420px;margin:70px auto}
+.login h2 {margin-top:0}
+.muted {color:#c9b5d4}
+.error {color:#ff9696;margin-top:12px}
+.success {color:#9ce6b0}
+.hidden {display:none!important}
+.stats {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:18px;
+}
+.stat {
+  background:#281435;
+  padding:18px;
+  border-radius:14px;
+  border:1px solid #503060;
+}
+.stat strong {display:block;font-size:26px;color:#d5a9f4;margin-top:8px}
+.order-top {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.order h3 {margin:0 0 10px}
+.order-details {line-height:1.9;color:#e6d9ed}
+.items {
+  background:#1d1027;
+  padding:12px;
+  border-radius:10px;
+  margin:12px 0;
+  line-height:1.9;
+}
+.status {
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:20px;
+  background:#59406a;
+  font-size:13px;
+}
+.status.pending {background:#79521b}
+.status.preparing {background:#4c448c}
+.status.ready {background:#246d55}
+.status.completed {background:#4b5962}
+.actions {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.actions select {
+  background:#160b20;
+  color:white;
+  border:1px solid #68447c;
+  flex:1;
+  min-width:150px;
+}
+#message {margin:10px 0}
+@media(max-width:550px) {
+  .stats {grid-template-columns:1fr}
+  header {align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>DRP COFFEE ☕</h1>
+    <p>STAFF ORDER DASHBOARD</p>
+  </div>
+  <button id="logoutBtn" class="secondary hidden">تسجيل الخروج</button>
+</header>
+
+<main>
+  <section id="loginSection" class="panel login">
+    <h2>تسجيل دخول الموظفين</h2>
+    <p class="muted">لوحة إدارة طلبات DRP</p>
+    <form id="loginForm">
+      <input id="email" type="email" placeholder="البريد الإلكتروني" required>
+      <input id="password" type="password" placeholder="كلمة المرور" required>
+      <button type="submit" style="width:100%">دخول</button>
+    </form>
+    <p id="loginError" class="error"></p>
+  </section>
+
+  <section id="dashboard" class="hidden">
+    <div class="panel">
+      <div class="order-top">
+        <div>
+          <h2 style="margin:0">الطلبات</h2>
+          <p class="muted">تصل الطلبات الجديدة تلقائياً</p>
+        </div>
+        <div class="actions">
+          <button id="soundBtn">🔔 تفعيل الصوت</button>
+          <button id="refreshBtn" class="secondary">تحديث</button>
+        </div>
+      </div>
+      <p id="message" class="muted"></p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">طلبات جديدة<strong id="newCount">0</strong></div>
+      <div class="stat">قيد التحضير<strong id="prepCount">0</strong></div>
+      <div class="stat">جاهزة<strong id="readyCount">0</strong></div>
+    </div>
+
+    <div id="ordersList"></div>
+  </section>
+</main>
+
+<script>
+const SUPABASE_URL = "https://oceudcjqwsfdqzvhyhlp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Q92rxmE2bYTTvvbpYU5ifg_BXN1bxOK";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const $ = id => document.getElementById(id);
+
+let orders = [];
+let channel = null;
+let soundEnabled = false;
+let audioContext = null;
+
+const statuses = {
+  pending: "جديد",
+  preparing: "قيد التحضير",
+  ready: "جاهز",
+  completed: "مكتمل"
+};
+
+function showMessage(message, error=false) {
+  $("message").textContent = message;
+  $("message").className = error ? "error" : "muted";
+}
+
+async function checkAdmin() {
+  const {data: {user}} = await db.auth.getUser();
+
+  if (!user) {
+    showLogin();
+    return false;
+  }
+
+  const {data, error} = await db
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error || !data) {
+    await db.auth.signOut();
+    showLogin();
+    $("loginError").textContent = "هذا الحساب غير مصرح له بدخول لوحة الإدارة.";
+    return false;
+  }
+
+  return true;
+}
+
+function showLogin() {
+  $("loginSection").classList.remove("hidden");
+  $("dashboard").classList.add("hidden");
+  $("logoutBtn").classList.add("hidden");
+}
+
+function showDashboard() {
+  $("loginSection").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+  $("logoutBtn").classList.remove("hidden");
+}
+
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("loginError").textContent = "جاري تسجيل الدخول...";
+
+  const {error} = await db.auth.signInWithPassword({
+    email: $("email").value.trim(),
+    password: $("password").value
+  });
+
+  if (error) {
+    $("loginError").textContent = "تعذر تسجيل الدخول: " + error.message;
+    return;
+  }
+
+  await startDashboard();
+});
+
+$("logoutBtn").addEventListener("click", async () => {
+  if (channel) await db.removeChannel(channel);
+  await db.auth.signOut();
+  orders = [];
+  showLogin();
+});
+
+async function startDashboard() {
+  const allowed = await checkAdmin();
+  if (!allowed) return;
+
+  showDashboard();
+  await loadOrders();
+  subscribeToOrders();
+}
+
+async function loadOrders() {
+  showMessage("جاري تحميل الطلبات...");
+
+  const {data, error} = await db
+    .from("orders")
+    .select("id, customer_name, customer_phone, branch, total, status, created_at, order_items(product_name, quantity, unit_price)")
+    .order("created_at", {ascending:false});
+
+  if (error) {
+    showMessage("خطأ في تحميل الطلبات: " + error.message, true);
+    return;
+  }
+
+  orders = data || [];
+  renderOrders();
+  showMessage("تم تحميل الطلبات بنجاح");
+}
+
+function renderOrders() {
+  $("newCount").textContent = orders.filter(o => o.status === "pending").length;
+  $("prepCount").textContent = orders.filter(o => o.status === "preparing").length;
+  $("readyCount").textContent = orders.filter(o => o.status === "ready").length;
+
+  const list = $("ordersList");
+
+  if (!orders.length) {
+    list.innerHTML = '<div class="panel muted">لا توجد طلبات حتى الآن ☕</div>';
+    return;
+  }
+
+  list.innerHTML = orders.map(order => {
+    const items = order.order_items || [];
+    const date = new Date(order.created_at).toLocaleString("ar-JO");
+
+    return `
+      <article class="order">
+        <div class="order-top">
+          <h3>طلب #${escapeHTML(order.id.slice(0,8))}</h3>
+          <span class="status ${escapeHTML(order.status)}">
+            ${statuses[order.status] || escapeHTML(order.status)}
+          </span>
+        </div>
+
+        <div class="order-details">
+          <div>👤 الزبون: ${escapeHTML(order.customer_name)}</div>
+          <div>📞 الهاتف: ${escapeHTML(order.customer_phone)}</div>
+          <div>📍 الفرع: ${escapeHTML(order.branch)}</div>
+          <div>🕒 ${escapeHTML(date)}</div>
+        </div>
+
+        <div class="items">
+          <strong>تفاصيل الطلب:</strong><br>
+          ${items.map(item =>
+            `${escapeHTML(item.product_name)} × ${Number(item.quantity)} — ${(Number(item.unit_price)*Number(item.quantity)).toFixed(2)} JD`
+          ).join("<br>")}
+        </div>
+
+        <h3>المجموع: ${Number(order.total).toFixed(2)} JD</h3>
+
+        <div class="actions">
+          <select id="status-${order.id}">
+            ${Object.entries(statuses).map(([key,label]) =>
+              `<option value="${key}" ${order.status === key ? "selected" : ""}>${label}</option>`
+            ).join("")}
+          </select>
+          <button onclick="updateStatus('${order.id}')">حفظ الحالة</button>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[char]);
+}
+
+async function updateStatus(id) {
+  const status = $("status-" + id).value;
+
+  const {error} = await db
+    .from("orders")
+    .update({status})
+    .eq("id", id);
+
+  if (error) {
+    alert("تعذر تحديث الحالة: " + error.message);
+    return;
+  }
+
+  await loadOrders();
+}
+
+window.updateStatus = updateStatus;
+
+function subscribeToOrders() {
+  if (channel) db.removeChannel(channel);
+
+  channel = db
+    .channel("drp-live-orders")
+    .on(
+      "postgres_changes",
+      {event:"INSERT", schema:"public", table:"orders"},
+      async payload => {
+        playAlert();
+        showMessage("🔔 وصل طلب جديد!");
+
+        await loadOrders();
+      }
+    )
+    .subscribe(status => {
+      if (status === "SUBSCRIBED") {
+        showMessage("متصل مباشرة — بانتظار الطلبات الجديدة");
+      }
+      if (status === "CHANNEL_ERROR") {
+        showMessage("تعذر الاتصال المباشر. جرّب تحديث الصفحة.", true);
+      }
+    });
+}
+
+function enableSound() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioContextClass) {
+    alert("المتصفح لا يدعم الصوت.");
+    return;
+  }
+
+  audioContext = audioContext || new AudioContextClass();
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+
+  soundEnabled = true;
+  $("soundBtn").textContent = "🔔 الصوت مفعّل";
+
+  playAlert();
+}
+
+function playAlert() {
+  if (!soundEnabled || !audioContext) return;
+
+  [0, 0.25, 0.5].forEach(delay => {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.value = 880;
+    gain.gain.setValueAtTime(0.001, audioContext.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.25, audioContext.currentTime + delay + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + delay + 0.18);
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(audioContext.currentTime + delay);
+    oscillator.stop(audioContext.currentTime + delay + 0.2);
+  });
+}
+
+$("soundBtn").addEventListener("click", enableSound);
+$("refreshBtn").addEventListener("click", loadOrders);
+
+(async function init() {
+  const {data: {session}} = await db.auth.getSession();
+
+  if (session) {
+    await startDashboard();
+  } else {
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>
