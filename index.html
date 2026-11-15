@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <title>DRP Coffee | Order Online</title>
 <style>
 :root {
@@ -183,6 +184,21 @@ footer{
   <h2 id="cartTitle">سلة الطلبات 🛒</h2>
   <div id="cartItems"></div>
   <div class="total" id="total">المجموع: 0.00 JD</div>
+  <div style="margin-bottom:15px">
+  <input id="customerName" placeholder="اسم الزبون"
+    style="width:100%;padding:13px;margin-bottom:10px;border-radius:10px">
+
+  <input id="customerPhone" placeholder="رقم الهاتف"
+    type="tel"
+    style="width:100%;padding:13px;margin-bottom:10px;border-radius:10px">
+
+  <select id="branch"
+    style="width:100%;padding:13px;border-radius:10px">
+    <option value="">اختر الفرع</option>
+    <option value="DRP شارع المدينة">DRP شارع المدينة</option>
+    <option value="DRP شارع عبدالله غوشة">DRP شارع عبدالله غوشة</option>
+  </select>
+</div>
   <button class="checkout" onclick="checkout()" id="checkoutBtn">تأكيد الطلب</button>
 </div>
 
@@ -360,22 +376,76 @@ function toggleLang(){
   render();
 }
 
-function checkout(){
+async function checkout(){
   if(cart.length===0){
     alert(tr("السلة فارغة!","Your cart is empty!"));
     return;
   }
-  let total=cart.reduce((s,x)=>s+products[x.id].price*x.qty,0);
-  let details=cart.map(x=>
-    products[x.id].name+" x "+x.qty
-  ).join("\n");
 
-  alert(
-    tr("طلبك:\n","Your order:\n")+
-    details+
-    "\n\n"+tr("المجموع: ","Total: ")+money(total)+
-    "\n\n"+tr("هذه نسخة تجريبية؛ الطلب لم يُرسل للمقهى.","Demo version: your order was not sent to the shop.")
-  );
+  const customerName = document.getElementById("customerName").value.trim();
+  const customerPhone = document.getElementById("customerPhone").value.trim();
+  const branch = document.getElementById("branch").value;
+
+  if(!customerName || !customerPhone || !branch){
+    alert(tr("يرجى تعبئة جميع البيانات واختيار الفرع","Please fill all details and select a branch"));
+    return;
+  }
+
+  const items = cart.map(x => ({
+    name: products[x.id].name,
+    quantity: x.qty
+  }));
+
+  const btn = document.getElementById("checkoutBtn");
+  btn.disabled = true;
+  btn.textContent = tr("جاري إرسال الطلب...","Sending order...");
+
+  try {
+    const response = await fetch(
+      "https://oceudcjqwsfdqzvhyhlp.supabase.co/functions/v1/drp-create-order",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": "sb_publishable_Q92rxmE2bYTTvvbpYU5ifg_BXN1bxOK"
+        },
+        body: JSON.stringify({
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          branch: branch,
+          items: items
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if(!response.ok || !result.success){
+      throw new Error(result.error || "Order failed");
+    }
+
+    alert(
+      tr("تم استلام طلبك بنجاح ❤️\nرقم الطلب: ","Your order was received ❤️\nOrder number: ")
+      + result.order_id
+      + "\n"
+      + tr("المجموع: ","Total: ")
+      + money(result.total)
+    );
+
+    cart = [];
+    renderCart();
+
+    document.getElementById("customerName").value = "";
+    document.getElementById("customerPhone").value = "";
+    document.getElementById("branch").value = "";
+
+  } catch(error) {
+    console.error(error);
+    alert(tr("لم نتمكن من إرسال الطلب. حاول مرة أخرى.","Could not send order. Please try again."));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = tr("تأكيد الطلب","Confirm Order");
+  }
 }
 
 render();
