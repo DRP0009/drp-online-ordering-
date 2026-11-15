@@ -416,21 +416,34 @@ function enableSound() {
 function playAlert() {
   if (!soundEnabled || !audioContext) return;
 
-  [0, 0.25, 0.5].forEach(delay => {
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+
+  const volume = 1.0;
+
+  [0, 0.35, 0.7, 1.05, 1.4].forEach((delay, index) => {
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
 
-    oscillator.type = "sine";
-    oscillator.frequency.value = 880;
+    oscillator.type = "square";
+    oscillator.frequency.value = index % 2 === 0 ? 1400 : 1000;
+
     gain.gain.setValueAtTime(0.001, audioContext.currentTime + delay);
-    gain.gain.exponentialRampToValueAtTime(0.25, audioContext.currentTime + delay + 0.03);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + delay + 0.18);
+    gain.gain.exponentialRampToValueAtTime(
+      volume,
+      audioContext.currentTime + delay + 0.02
+    );
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      audioContext.currentTime + delay + 0.3
+    );
 
     oscillator.connect(gain);
     gain.connect(audioContext.destination);
 
     oscillator.start(audioContext.currentTime + delay);
-    oscillator.stop(audioContext.currentTime + delay + 0.2);
+    oscillator.stop(audioContext.currentTime + delay + 0.32);
   });
 }
 
