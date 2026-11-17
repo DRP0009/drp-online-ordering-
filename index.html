@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <title>DRP Coffee | Order Online</title>
+
 <style>
 :root {
   --bg:#160b20;
@@ -47,6 +48,7 @@ button{
   font-weight:bold;
   border-radius:12px;
 }
+button:disabled{opacity:.6;cursor:not-allowed}
 .lang{
   background:#fff;
   color:#301044;
@@ -130,9 +132,16 @@ h2{
   justify-content:space-between;
   align-items:center;
   gap:10px;
-  padding:10px 0;
+  padding:12px 0;
   border-bottom:1px solid #493052;
 }
+.cart-product{min-width:0}
+.cart-product small{
+  display:block;
+  color:#d9b6f4;
+  margin-top:5px;
+}
+.qty{white-space:nowrap}
 .qty button{
   background:#7139a0;
   color:white;
@@ -159,8 +168,66 @@ footer{
   color:#bda9c9;
   font-size:13px;
 }
+
+/* Milk selection popup */
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  background:rgba(0,0,0,.75);
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.modal.show{display:flex}
+.modal-content{
+  width:100%;
+  max-width:390px;
+  background:linear-gradient(145deg,#321b40,#24112f);
+  border:1px solid #8055a0;
+  border-radius:20px;
+  padding:23px;
+  box-shadow:0 15px 50px #0008;
+}
+.modal-content h3{
+  margin:0 0 8px;
+  font-size:20px;
+}
+.modal-content p{
+  color:#c4b5ce;
+  margin:0 0 18px;
+  font-size:14px;
+}
+.modal-content select{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #8055a0;
+  background:#160b20;
+  color:white;
+  font-size:16px;
+  margin-bottom:16px;
+}
+.modal-actions{
+  display:flex;
+  gap:10px;
+}
+.modal-actions button{
+  flex:1;
+  padding:13px;
+}
+.confirm-milk{
+  background:#7139a0;
+  color:white;
+}
+.cancel-milk{
+  background:#493052;
+  color:white;
+}
 </style>
 </head>
+
 <body>
 
 <header>
@@ -174,40 +241,70 @@ footer{
   <button class="lang" onclick="toggleLang()">EN / AR</button>
 </div>
 
-<input class="search" id="search" placeholder="ابحث عن منتج..." oninput="render()">
+<input class="search" id="search"
+placeholder="ابحث عن منتج..." oninput="render()">
 
 <div class="categories" id="categories"></div>
-
 <div class="menu" id="menu"></div>
 
 <div class="cart" id="cart">
   <h2 id="cartTitle">سلة الطلبات 🛒</h2>
   <div id="cartItems"></div>
   <div class="total" id="total">المجموع: 0.00 JD</div>
+
   <div style="margin-bottom:15px">
-  <input id="customerName" placeholder="اسم الزبون"
-    style="width:100%;padding:13px;margin-bottom:10px;border-radius:10px">
+    <input id="customerName" placeholder="اسم الزبون"
+      style="width:100%;padding:13px;margin-bottom:10px;border-radius:10px">
 
-  <input id="customerPhone" placeholder="رقم الهاتف"
-    type="tel"
-    style="width:100%;padding:13px;margin-bottom:10px;border-radius:10px">
+    <input id="customerPhone" placeholder="رقم الهاتف"
+      type="tel"
+      style="width:100%;padding:13px;margin-bottom:10px;border-radius:10px">
 
-  <select id="branch"
-    style="width:100%;padding:13px;border-radius:10px">
-    <option value="">اختر الفرع</option>
-    <option value="DRP شارع المدينة">DRP شارع المدينة</option>
-    <option value="DRP شارع عبدالله غوشة">DRP شارع عبدالله غوشة</option>
-  </select>
-</div>
-  <button class="checkout" onclick="checkout()" id="checkoutBtn">تأكيد الطلب</button>
+    <select id="branch"
+      style="width:100%;padding:13px;border-radius:10px">
+      <option value="">اختر الفرع</option>
+      <option value="DRP شارع المدينة">DRP شارع المدينة</option>
+      <option value="DRP شارع عبدالله غوشة">DRP شارع عبدالله غوشة</option>
+    </select>
+  </div>
+
+  <button class="checkout" onclick="checkout()" id="checkoutBtn">
+    تأكيد الطلب
+  </button>
 </div>
 
 <footer>DRP COFFEE · THANK YOU FOR CHOOSING US ☕</footer>
+
+<!-- Milk popup -->
+<div class="modal" id="milkModal">
+  <div class="modal-content">
+    <h3 id="milkTitle">اختر نوع الحليب 🥛</h3>
+    <p id="milkSubtitle">اختار الحليب المفضل عندك</p>
+
+    <select id="milkSelect">
+      <option value="حليب عادي">حليب عادي</option>
+      <option value="حليب خالي الدسم">حليب خالي الدسم</option>
+      <option value="حليب شوفان">حليب شوفان</option>
+      <option value="حليب اللوز">حليب اللوز</option>
+      <option value="حليب خالي اللاكتوز">حليب خالي اللاكتوز</option>
+    </select>
+
+    <div class="modal-actions">
+      <button class="cancel-milk" onclick="closeMilkModal()" id="cancelMilk">
+        إلغاء
+      </button>
+      <button class="confirm-milk" onclick="confirmMilk()" id="confirmMilkBtn">
+        إضافة للسلة
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
 let lang = "ar";
 let category = "All";
 let cart = [];
+let pendingProductIndex = null;
 
 const products = [
   {name:"Strawberry Refresher",price:2.50,cat:"Cold Drinks"},
@@ -276,19 +373,83 @@ const products = [
   {name:"Hot Caramel Macchiato",price:2.75,cat:"Hot Coffee"}
 ];
 
-const categories = ["All","Cold Drinks","Cold Coffee","Hot Coffee","Desserts"];
+const categories = [
+  "All","Cold Drinks","Cold Coffee","Hot Coffee","Desserts"
+];
 
-function tr(ar,en){return lang==="ar"?ar:en}
-function money(n){return n.toFixed(2)+" JD"}
+const milkTypes = [
+  "حليب عادي",
+  "حليب خالي الدسم",
+  "حليب شوفان",
+  "حليب اللوز",
+  "حليب خالي اللاكتوز"
+];
+
+// These products have a milk selection.
+const milkProducts = new Set([
+  "Strawberry Smoothie",
+  "Passion Fruit Smoothie",
+  "Mango Smoothie",
+  "Matcha Latte",
+  "Strawberry Matcha",
+  "Mango Matcha",
+  "Iced Chocolate",
+  "Milkshake Coffee",
+  "Milkshake Caramel",
+  "Iced Latte",
+  "Spanish Latte",
+  "Pistachio Latte",
+  "Caramel Latte",
+  "Caramel Macchiato",
+  "Dark Mocha",
+  "White Mocha",
+  "Matcha Frappe",
+  "Frappe Vanilla",
+  "Frappe Chocolate",
+  "Frappe Caramel",
+  "Flat White",
+  "Cinnamon Spice Latte",
+  "Coffee Latte",
+  "Cappuccino",
+  "Hot Chocolate",
+  "Hot Choco Marshmallow",
+  "Hot Pistachio",
+  "Hot Caramel Macchiato"
+]);
+
+function tr(ar,en){
+  return lang==="ar"?ar:en;
+}
+
+function money(n){
+  return n.toFixed(2)+" JD";
+}
+
+function milkLabel(milk){
+  if(lang==="en"){
+    const labels = {
+      "حليب عادي":"Regular milk",
+      "حليب خالي الدسم":"Skimmed milk",
+      "حليب شوفان":"Oat milk",
+      "حليب اللوز":"Almond milk",
+      "حليب خالي اللاكتوز":"Lactose-free milk"
+    };
+    return labels[milk] || milk;
+  }
+  return milk;
+}
 
 function renderCategories(){
-  document.getElementById("categories").innerHTML=categories.map(c=>
-    `<button class="cat ${category===c?'active':''}" onclick="setCategory('${c}')">${categoryName(c)}</button>`
-  ).join("");
+  document.getElementById("categories").innerHTML =
+    categories.map(c =>
+      `<button class="cat ${category===c?'active':''}"
+        onclick="setCategory('${c}')">${categoryName(c)}</button>`
+    ).join("");
 }
 
 function categoryName(c){
   if(lang==="en") return c==="All"?"All":c;
+
   return {
     "All":"الكل",
     "Cold Drinks":"مشروبات باردة",
@@ -305,74 +466,169 @@ function setCategory(c){
 
 function render(){
   renderCategories();
+
   const search=document.getElementById("search").value.toLowerCase();
-  const filtered=products.filter(p=>
-    (category==="All"||p.cat===category) &&
+
+  const filtered=products.filter(p =>
+    (category==="All" || p.cat===category) &&
     p.name.toLowerCase().includes(search)
   );
 
   document.getElementById("menu").innerHTML=filtered.map(p=>{
     const i=products.indexOf(p);
+
     return `<div class="item">
       <h3>${p.name}</h3>
       <div class="price">${money(p.price)}</div>
-      <button class="add" onclick="addToCart(${i})">${tr("أضف للسلة +","Add to cart +")}</button>
+      <button class="add" onclick="addToCart(${i})">
+        ${tr("أضف للسلة +","Add to cart +")}
+      </button>
     </div>`;
   }).join("");
+
   renderCart();
 }
 
 function addToCart(i){
-  const found=cart.find(x=>x.id===i);
-  if(found) found.qty++;
-  else cart.push({id:i,qty:1});
+  if(milkProducts.has(products[i].name)){
+    pendingProductIndex=i;
+    document.getElementById("milkSelect").value="حليب عادي";
+    updateMilkModalLanguage();
+    document.getElementById("milkModal").classList.add("show");
+    return;
+  }
+
+  addItemToCart(i,null);
+}
+
+function updateMilkModalLanguage(){
+  document.getElementById("milkTitle").textContent=
+    tr("اختر نوع الحليب 🥛","Choose your milk 🥛");
+
+  document.getElementById("milkSubtitle").textContent=
+    tr("الحليب العادي محدد تلقائياً، ويمكنك تغييره",
+       "Regular milk is selected by default. You can change it.");
+
+  document.getElementById("cancelMilk").textContent=
+    tr("إلغاء","Cancel");
+
+  document.getElementById("confirmMilkBtn").textContent=
+    tr("إضافة للسلة","Add to cart");
+
+  const select=document.getElementById("milkSelect");
+
+  select.innerHTML=milkTypes.map(m =>
+    `<option value="${m}">${milkLabel(m)}</option>`
+  ).join("");
+  
+  select.value="حليب عادي";
+}
+
+function closeMilkModal(){
+  document.getElementById("milkModal").classList.remove("show");
+  pendingProductIndex=null;
+}
+
+function confirmMilk(){
+  if(pendingProductIndex===null)return;
+
+  const index=pendingProductIndex;
+  const milk=document.getElementById("milkSelect").value;
+
+  closeMilkModal();
+  addItemToCart(index,milk);
+}
+
+function addItemToCart(i,milk){
+  const found=cart.find(x =>
+    x.id===i && x.milk_type===milk
+  );
+
+  if(found){
+    found.qty++;
+  }else{
+    cart.push({
+      id:i,
+      qty:1,
+      milk_type:milk
+    });
+  }
+
   renderCart();
 }
 
-function changeQty(i,n){
-  const item=cart.find(x=>x.id===i);
+function changeQty(index,n){
+  const item=cart[index];
   if(!item)return;
+
   item.qty+=n;
-  if(item.qty<=0)cart=cart.filter(x=>x.id!==i);
+
+  if(item.qty<=0){
+    cart.splice(index,1);
+  }
+
   renderCart();
 }
 
 function renderCart(){
   const box=document.getElementById("cartItems");
+
   if(cart.length===0){
-    box.innerHTML=`<p class="empty">${tr("السلة فارغة حالياً","Your cart is empty")}</p>`;
+    box.innerHTML=
+      `<p class="empty">${tr("السلة فارغة حالياً","Your cart is empty")}</p>`;
   }else{
-    box.innerHTML=cart.map(x=>{
+    box.innerHTML=cart.map((x,index)=>{
       const p=products[x.id];
+
+      const milkLine=x.milk_type
+        ? `<small>${tr("نوع الحليب: ","Milk: ")}${milkLabel(x.milk_type)}</small>`
+        : "";
+
       return `<div class="cart-row">
-        <div>${p.name}<br><small>${money(p.price*x.qty)}</small></div>
+        <div class="cart-product">
+          <strong>${p.name}</strong>
+          ${milkLine}
+          <small>${money(p.price*x.qty)}</small>
+        </div>
         <div class="qty">
-          <button onclick="changeQty(${x.id},-1)">−</button>
+          <button onclick="changeQty(${index},-1)">−</button>
           ${x.qty}
-          <button onclick="changeQty(${x.id},1)">+</button>
+          <button onclick="changeQty(${index},1)">+</button>
         </div>
       </div>`;
     }).join("");
   }
-  const total=cart.reduce((s,x)=>s+products[x.id].price*x.qty,0);
+
+  const total=cart.reduce(
+    (s,x)=>s+products[x.id].price*x.qty,0
+  );
+
   document.getElementById("total").textContent=
     tr("المجموع: ","Total: ")+money(total);
 }
 
 function toggleLang(){
   lang=lang==="ar"?"en":"ar";
+
   document.documentElement.lang=lang;
   document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+
   document.getElementById("subtitle").textContent=
     tr("اطلب قهوتك المفضلة","ORDER YOUR FAVORITE COFFEE");
+
   document.getElementById("menuTitle").textContent=
     tr("قائمة المشروبات","OUR MENU");
+
   document.getElementById("cartTitle").textContent=
     tr("سلة الطلبات 🛒","YOUR CART 🛒");
+
   document.getElementById("checkoutBtn").textContent=
     tr("تأكيد الطلب","Confirm Order");
+
   document.getElementById("search").placeholder=
     tr("ابحث عن منتج...","Search products...");
+
+  updateMilkModalLanguage();
   render();
 }
 
@@ -382,73 +638,90 @@ async function checkout(){
     return;
   }
 
-  const customerName = document.getElementById("customerName").value.trim();
-  const customerPhone = document.getElementById("customerPhone").value.trim();
-  const branch = document.getElementById("branch").value;
+  const customerName=
+    document.getElementById("customerName").value.trim();
+
+  const customerPhone=
+    document.getElementById("customerPhone").value.trim();
+
+  const branch=
+    document.getElementById("branch").value;
 
   if(!customerName || !customerPhone || !branch){
-    alert(tr("يرجى تعبئة جميع البيانات واختيار الفرع","Please fill all details and select a branch"));
+    alert(tr(
+      "يرجى تعبئة جميع البيانات واختيار الفرع",
+      "Please fill all details and select a branch"
+    ));
     return;
   }
 
-  const items = cart.map(x => ({
-    name: products[x.id].name,
-    quantity: x.qty
+  const items=cart.map(x=>({
+    name:products[x.id].name,
+    quantity:x.qty,
+    milk_type:x.milk_type
   }));
 
-  const btn = document.getElementById("checkoutBtn");
-  btn.disabled = true;
-  btn.textContent = tr("جاري إرسال الطلب...","Sending order...");
+  const btn=document.getElementById("checkoutBtn");
 
-  try {
-    const response = await fetch(
+  btn.disabled=true;
+  btn.textContent=tr("جاري إرسال الطلب...","Sending order...");
+
+  try{
+    const response=await fetch(
       "https://oceudcjqwsfdqzvhyhlp.supabase.co/functions/v1/drp-create-order",
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": "sb_publishable_Q92rxmE2bYTTvvbpYU5ifg_BXN1bxOK"
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "apikey":"sb_publishable_Q92rxmE2bYTTvvbpYU5ifg_BXN1bxOK"
         },
-        body: JSON.stringify({
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          branch: branch,
-          items: items
+        body:JSON.stringify({
+          customer_name:customerName,
+          customer_phone:customerPhone,
+          branch:branch,
+          items:items
         })
       }
     );
 
-    const result = await response.json();
+    const result=await response.json();
 
     if(!response.ok || !result.success){
       throw new Error(result.error || "Order failed");
     }
 
     alert(
-      tr("تم استلام طلبك بنجاح ❤️\nرقم الطلب: ","Your order was received ❤️\nOrder number: ")
-      + result.order_id
-      + "\n"
-      + tr("المجموع: ","Total: ")
-      + money(result.total)
+      tr(
+        "تم استلام طلبك بنجاح ❤️\nرقم الطلب: ",
+        "Your order was received ❤️\nOrder number: "
+      )
+      +result.order_id
+      +"\n"
+      +tr("المجموع: ","Total: ")
+      +money(result.total)
     );
 
-    cart = [];
+    cart=[];
     renderCart();
 
-    document.getElementById("customerName").value = "";
-    document.getElementById("customerPhone").value = "";
-    document.getElementById("branch").value = "";
+    document.getElementById("customerName").value="";
+    document.getElementById("customerPhone").value="";
+    document.getElementById("branch").value="";
 
-  } catch(error) {
+  }catch(error){
     console.error(error);
-    alert(tr("لم نتمكن من إرسال الطلب. حاول مرة أخرى.","Could not send order. Please try again."));
-  } finally {
-    btn.disabled = false;
-    btn.textContent = tr("تأكيد الطلب","Confirm Order");
+    alert(tr(
+      "لم نتمكن من إرسال الطلب. حاول مرة أخرى.",
+      "Could not send order. Please try again."
+    ));
+  }finally{
+    btn.disabled=false;
+    btn.textContent=tr("تأكيد الطلب","Confirm Order");
   }
 }
 
 render();
 </script>
+
 </body>
 </html>
