@@ -198,6 +198,7 @@ footer{
   color:#c4b5ce;
   margin:0 0 18px;
   font-size:14px;
+  line-height:1.7;
 }
 .modal-content select{
   width:100%;
@@ -275,19 +276,12 @@ placeholder="ابحث عن منتج..." oninput="render()">
 
 <footer>DRP COFFEE · THANK YOU FOR CHOOSING US ☕</footer>
 
-<!-- Milk popup -->
 <div class="modal" id="milkModal">
   <div class="modal-content">
     <h3 id="milkTitle">اختر نوع الحليب 🥛</h3>
     <p id="milkSubtitle">اختار الحليب المفضل عندك</p>
 
-    <select id="milkSelect">
-      <option value="حليب عادي">حليب عادي</option>
-      <option value="حليب خالي الدسم">حليب خالي الدسم</option>
-      <option value="حليب شوفان">حليب شوفان</option>
-      <option value="حليب اللوز">حليب اللوز</option>
-      <option value="حليب خالي اللاكتوز">حليب خالي اللاكتوز</option>
-    </select>
+    <select id="milkSelect"></select>
 
     <div class="modal-actions">
       <button class="cancel-milk" onclick="closeMilkModal()" id="cancelMilk">
@@ -385,7 +379,6 @@ const milkTypes = [
   "حليب خالي اللاكتوز"
 ];
 
-// These products have a milk selection.
 const milkProducts = new Set([
   "Strawberry Smoothie",
   "Passion Fruit Smoothie",
@@ -422,7 +415,24 @@ function tr(ar,en){
 }
 
 function money(n){
-  return n.toFixed(2)+" JD";
+  return Number(n).toFixed(2)+" JD";
+}
+
+// Milk surcharge: only oat, almond and lactose-free milk cost extra.
+function getMilkExtra(milk){
+  if(
+    milk==="حليب شوفان" ||
+    milk==="حليب اللوز" ||
+    milk==="حليب خالي اللاكتوز"
+  ){
+    return 0.50;
+  }
+  return 0;
+}
+
+function getItemUnitPrice(item){
+  const product=products[item.id];
+  return product.price + getMilkExtra(item.milk_type);
 }
 
 function milkLabel(milk){
@@ -506,8 +516,10 @@ function updateMilkModalLanguage(){
     tr("اختر نوع الحليب 🥛","Choose your milk 🥛");
 
   document.getElementById("milkSubtitle").textContent=
-    tr("الحليب العادي محدد تلقائياً، ويمكنك تغييره",
-       "Regular milk is selected by default. You can change it.");
+    tr(
+      "الحليب العادي وخالي الدسم بدون زيادة. باقي الأنواع +0.50 دينار.",
+      "Regular and skimmed milk are free. Other milk options cost +0.50 JD."
+    );
 
   document.getElementById("cancelMilk").textContent=
     tr("إلغاء","Cancel");
@@ -517,10 +529,15 @@ function updateMilkModalLanguage(){
 
   const select=document.getElementById("milkSelect");
 
-  select.innerHTML=milkTypes.map(m =>
-    `<option value="${m}">${milkLabel(m)}</option>`
-  ).join("");
-  
+  select.innerHTML=milkTypes.map(m => {
+    const extra=getMilkExtra(m);
+    const extraLabel=extra>0
+      ? (lang==="ar" ? " (+0.50 JD)" : " (+0.50 JD)")
+      : (lang==="ar" ? " (بدون زيادة)" : " (No extra charge)");
+
+    return `<option value="${m}">${milkLabel(m)}${extraLabel}</option>`;
+  }).join("");
+
   select.value="حليب عادي";
 }
 
@@ -579,16 +596,19 @@ function renderCart(){
   }else{
     box.innerHTML=cart.map((x,index)=>{
       const p=products[x.id];
+      const unitPrice=getItemUnitPrice(x);
+      const lineTotal=unitPrice*x.qty;
+      const extra=getMilkExtra(x.milk_type);
 
       const milkLine=x.milk_type
-        ? `<small>${tr("نوع الحليب: ","Milk: ")}${milkLabel(x.milk_type)}</small>`
+        ? `<small>${tr("نوع الحليب: ","Milk: ")}${milkLabel(x.milk_type)}${extra>0 ? " (+0.50 JD)" : ""}</small>`
         : "";
 
       return `<div class="cart-row">
         <div class="cart-product">
           <strong>${p.name}</strong>
           ${milkLine}
-          <small>${money(p.price*x.qty)}</small>
+          <small>${money(lineTotal)}</small>
         </div>
         <div class="qty">
           <button onclick="changeQty(${index},-1)">−</button>
@@ -600,7 +620,7 @@ function renderCart(){
   }
 
   const total=cart.reduce(
-    (s,x)=>s+products[x.id].price*x.qty,0
+    (s,x)=>s+getItemUnitPrice(x)*x.qty,0
   );
 
   document.getElementById("total").textContent=
