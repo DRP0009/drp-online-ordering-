@@ -46,6 +46,10 @@ button {
 button:disabled {opacity:.5;cursor:not-allowed}
 .secondary {background:#493057}
 .danger {background:#9b3434}
+.accept-btn {
+  background:#168653;
+  min-width:130px;
+}
 main {max-width:1050px;margin:25px auto;padding:0 15px}
 .panel,.order {
   background:var(--card);
@@ -80,7 +84,12 @@ input {
   border-radius:14px;
   border:1px solid #503060;
 }
-.stat strong {display:block;font-size:26px;color:#d5a9f4;margin-top:8px}
+.stat strong {
+  display:block;
+  font-size:26px;
+  color:#d5a9f4;
+  margin-top:8px;
+}
 .order-top {
   display:flex;
   justify-content:space-between;
@@ -135,9 +144,6 @@ input {
   min-width:150px;
 }
 #message {margin:10px 0}
-.sound-stop {
-  background:#a83232;
-}
 .sound-active {
   border:1px solid #d5a9f4;
   box-shadow:0 0 15px #7139a0;
@@ -179,7 +185,6 @@ input {
         </div>
         <div class="actions">
           <button id="soundBtn">🔔 تفعيل الصوت</button>
-          <button id="stopSoundBtn" class="danger">🔇 إيقاف الرنين</button>
           <button id="refreshBtn" class="secondary">تحديث</button>
         </div>
       </div>
@@ -210,8 +215,9 @@ let soundEnabled = false;
 let audioContext = null;
 let ringingInterval = null;
 let isRinging = false;
-let knownOrderIds = new Set();
+
 let pendingOrderIds = new Set();
+let activeOscillators = new Set();
 
 const statuses = {
   pending: "جديد",
@@ -254,7 +260,8 @@ async function checkAdmin() {
   if (error || !data) {
     await db.auth.signOut();
     showLogin();
-    $("loginError").textContent = "هذا الحساب غير مصرح له بدخول لوحة الإدارة.";
+    $("loginError").textContent =
+      "هذا الحساب غير مصرح له بدخول لوحة الإدارة.";
     return false;
   }
 
@@ -271,7 +278,8 @@ $("loginForm").addEventListener("submit", async e => {
   });
 
   if (error) {
-    $("loginError").textContent = "تعذر تسجيل الدخول: " + error.message;
+    $("loginError").textContent =
+      "تعذر تسجيل الدخول: " + error.message;
     return;
   }
 
@@ -285,9 +293,10 @@ $("logoutBtn").addEventListener("click", async () => {
   channel = null;
 
   await db.auth.signOut();
+
   orders = [];
-  knownOrderIds.clear();
   pendingOrderIds.clear();
+
   showLogin();
 });
 
@@ -329,42 +338,48 @@ async function loadOrders(initial=false) {
 
   orders = data || [];
 
-  if (initial) {
-    knownOrderIds = new Set(orders.map(o => o.id));
-  } else {
-    orders.forEach(order => knownOrderIds.add(order.id));
-  }
-
   syncPendingOrders();
   renderOrders();
+
   showMessage("تم تحميل الطلبات بنجاح");
 }
 
+/*
+  الرنين مرتبط بكل الطلبات التي حالتها pending.
+  عند قبول طلب، ينحذف من المجموعة.
+  إذا بقي أي طلب غير مقبول، يستمر الرنين.
+*/
 function syncPendingOrders() {
   const currentPending = new Set(
-    orders.filter(o => o.status === "pending").map(o => o.id)
+    orders
+      .filter(order => order.status === "pending")
+      .map(order => order.id)
   );
 
-  pendingOrderIds.forEach(id => {
-    if (!currentPending.has(id)) {
-      pendingOrderIds.delete(id);
-    }
-  });
+  pendingOrderIds = currentPending;
 
-  if (pendingOrderIds.size === 0) {
+  if (pendingOrderIds.size > 0) {
+    startRinging();
+  } else {
     stopRinging();
   }
 }
 
 function renderOrders() {
-  $("newCount").textContent = orders.filter(o => o.status === "pending").length;
-  $("prepCount").textContent = orders.filter(o => o.status === "preparing").length;
-  $("readyCount").textContent = orders.filter(o => o.status === "ready").length;
+  $("newCount").textContent =
+    orders.filter(o => o.status === "pending").length;
+
+  $("prepCount").textContent =
+    orders.filter(o => o.status === "preparing").length;
+
+  $("readyCount").textContent =
+    orders.filter(o => o.status === "ready").length;
 
   const list = $("ordersList");
 
   if (!orders.length) {
-    list.innerHTML = '<div class="panel muted">لا توجد طلبات حتى الآن ☕</div>';
+    list.innerHTML =
+      '<div class="panel muted">لا توجد طلبات حتى الآن ☕</div>';
     return;
   }
 
@@ -375,7 +390,7 @@ function renderOrders() {
     return `
       <article class="order">
         <div class="order-top">
-          <h3>طلب #${escapeHTML(order.id.slice(0,8))}</h3>
+          <h3>طلب #${escapeHTML(String(order.id).slice(0,8))}</h3>
           <span class="status ${escapeHTML(order.status)}">
             ${statuses[order.status] || escapeHTML(order.status)}
           </span>
@@ -397,12 +412,16 @@ function renderOrders() {
 
             return `
               <div class="item-line">
-                <strong>${escapeHTML(item.product_name)} × ${Number(item.quantity)}</strong>
+                <strong>
+                  ${escapeHTML(item.product_name)} × ${Number(item.quantity)}
+                </strong>
                 <div class="milk-info">
                   🥛 نوع الحليب: ${escapeHTML(milk)}
                 </div>
                 <div class="item-price">
-                  السعر: ${(Number(item.unit_price) * Number(item.quantity)).toFixed(2)} JD
+                  السعر:
+                  ${(Number(item.unit_price) * Number(item.quantity)).toFixed(2)}
+                  JD
                 </div>
               </div>
             `;
@@ -412,12 +431,29 @@ function renderOrders() {
         <h3>المجموع: ${Number(order.total).toFixed(2)} JD</h3>
 
         <div class="actions">
-          <select id="status-${order.id}">
-            ${Object.entries(statuses).map(([key,label]) =>
-              `<option value="${key}" ${order.status === key ? "selected" : ""}>${label}</option>`
-            ).join("")}
-          </select>
-          <button onclick="updateStatus('${order.id}')">حفظ الحالة</button>
+          ${
+            order.status === "pending"
+            ? `
+              <button
+                class="accept-btn"
+                onclick="acceptOrder('${order.id}')"
+              >
+                ✓ قبول الطلب
+              </button>
+            `
+            : `
+              <select id="status-${order.id}">
+                ${Object.entries(statuses).map(([key,label]) =>
+                  `<option value="${key}" ${order.status === key ? "selected" : ""}>
+                    ${label}
+                  </option>`
+                ).join("")}
+              </select>
+              <button onclick="updateStatus('${order.id}')">
+                حفظ الحالة
+              </button>
+            `
+          }
         </div>
       </article>
     `;
@@ -434,8 +470,42 @@ function escapeHTML(value) {
   })[char]);
 }
 
+/* قبول الطلب ينقله مباشرة إلى قيد التحضير */
+async function acceptOrder(id) {
+  const button = document.querySelector(
+    `button[onclick="acceptOrder('${id}')"]`
+  );
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "جاري القبول...";
+  }
+
+  const {error} = await db
+    .from("orders")
+    .update({status:"preparing"})
+    .eq("id", id)
+    .eq("status", "pending");
+
+  if (error) {
+    alert("تعذر قبول الطلب: " + error.message);
+    if (button) {
+      button.disabled = false;
+      button.textContent = "✓ قبول الطلب";
+    }
+    return;
+  }
+
+  await loadOrders();
+  showMessage("تم قبول الطلب بنجاح ✓");
+}
+
+/* تحديث الحالات الأخرى */
 async function updateStatus(id) {
-  const status = $("status-" + id).value;
+  const select = $("status-" + id);
+  if (!select) return;
+
+  const status = select.value;
 
   const {error} = await db
     .from("orders")
@@ -448,46 +518,64 @@ async function updateStatus(id) {
   }
 
   await loadOrders();
+  showMessage("تم تحديث حالة الطلب ✓");
 }
 
 window.updateStatus = updateStatus;
+window.acceptOrder = acceptOrder;
 
+/* استقبال الطلبات الجديدة وتحديثات حالتها */
 function subscribeToOrders() {
   if (channel) db.removeChannel(channel);
 
   channel = db
     .channel("drp-live-orders")
+
     .on(
       "postgres_changes",
       {event:"INSERT", schema:"public", table:"orders"},
       async payload => {
-        const newOrder = payload.new;
+        showMessage("🔔 وصل طلب جديد!");
 
-        if (newOrder?.id) {
-          knownOrderIds.add(newOrder.id);
-          if (newOrder.status === "pending") {
-            pendingOrderIds.add(newOrder.id);
-            startRinging();
-          }
+        if (payload.new?.id && payload.new.status === "pending") {
+          pendingOrderIds.add(payload.new.id);
+          startRinging();
         }
 
-        showMessage("🔔 وصل طلب جديد!");
         await loadOrders();
       }
     )
+
+    .on(
+      "postgres_changes",
+      {event:"UPDATE", schema:"public", table:"orders"},
+      async payload => {
+        /*
+          إذا تغيرت حالة الطلب من pending إلى أي حالة أخرى،
+          سيتم تحديث المجموعة وإيقاف رنينه.
+        */
+        await loadOrders();
+      }
+    )
+
     .subscribe(status => {
       if (status === "SUBSCRIBED") {
         showMessage("متصل مباشرة — بانتظار الطلبات الجديدة");
       }
+
       if (status === "CHANNEL_ERROR") {
-        showMessage("تعذر الاتصال المباشر. جرّب تحديث الصفحة.", true);
+        showMessage(
+          "تعذر الاتصال المباشر. جرّب تحديث الصفحة.",
+          true
+        );
       }
     });
 }
 
-/* Enable audio after an actual user click */
+/* تفعيل الصوت بعد ضغط الموظف */
 async function enableSound() {
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  const AudioContextClass =
+    window.AudioContext || window.webkitAudioContext;
 
   if (!AudioContextClass) {
     alert("المتصفح لا يدعم الصوت.");
@@ -502,10 +590,15 @@ async function enableSound() {
     }
 
     soundEnabled = true;
+
     $("soundBtn").textContent = "🔔 الصوت مفعّل";
     $("soundBtn").classList.add("sound-active");
 
-    playAlert();
+    if (pendingOrderIds.size > 0) {
+      startRinging();
+    } else {
+      playAlert();
+    }
 
   } catch (error) {
     console.error(error);
@@ -513,7 +606,18 @@ async function enableSound() {
   }
 }
 
-/* Stronger and longer alert: approximately 8 seconds */
+/* إيقاف أي نغمات تعمل حالياً */
+function stopCurrentSounds() {
+  activeOscillators.forEach(oscillator => {
+    try {
+      oscillator.stop();
+    } catch (error) {}
+  });
+
+  activeOscillators.clear();
+}
+
+/* نغمة تنبيه قوية وطويلة */
 function playAlert() {
   if (!soundEnabled || !audioContext) return;
 
@@ -522,7 +626,6 @@ function playAlert() {
   }
 
   const start = audioContext.currentTime;
-  const duration = 8;
 
   const pattern = [
     {time:0, freq:1100},
@@ -543,37 +646,64 @@ function playAlert() {
     const gain = audioContext.createGain();
 
     oscillator.type = "sawtooth";
-    oscillator.frequency.setValueAtTime(note.freq, start + note.time);
+    oscillator.frequency.setValueAtTime(
+      note.freq,
+      start + note.time
+    );
 
     gain.gain.setValueAtTime(0.001, start + note.time);
-    gain.gain.linearRampToValueAtTime(0.8, start + note.time + 0.04);
-    gain.gain.setValueAtTime(0.8, start + note.time + 0.38);
-    gain.gain.linearRampToValueAtTime(0.001, start + note.time + 0.48);
+    gain.gain.linearRampToValueAtTime(
+      0.8,
+      start + note.time + 0.04
+    );
+    gain.gain.setValueAtTime(
+      0.8,
+      start + note.time + 0.38
+    );
+    gain.gain.linearRampToValueAtTime(
+      0.001,
+      start + note.time + 0.48
+    );
 
     oscillator.connect(gain);
     gain.connect(audioContext.destination);
+
+    activeOscillators.add(oscillator);
+
+    oscillator.onended = () => {
+      activeOscillators.delete(oscillator);
+      oscillator.disconnect();
+      gain.disconnect();
+    };
 
     oscillator.start(start + note.time);
     oscillator.stop(start + note.time + 0.5);
   });
 }
 
+/* تشغيل الرنين ما دام هناك طلب واحد على الأقل لم يُقبل */
 function startRinging() {
-  if (!soundEnabled || pendingOrderIds.size === 0 || isRinging) return;
+  if (!soundEnabled || !audioContext) return;
+  if (pendingOrderIds.size === 0 || isRinging) return;
 
   isRinging = true;
+
   playAlert();
 
   ringingInterval = setInterval(() => {
-    if (!soundEnabled || pendingOrderIds.size === 0) {
+    if (
+      !soundEnabled ||
+      pendingOrderIds.size === 0
+    ) {
       stopRinging();
       return;
     }
 
     playAlert();
-  }, 10000);
+  }, 8000);
 }
 
+/* إيقاف الرنين عند قبول جميع الطلبات */
 function stopRinging() {
   isRinging = false;
 
@@ -581,23 +711,11 @@ function stopRinging() {
     clearInterval(ringingInterval);
     ringingInterval = null;
   }
+
+  stopCurrentSounds();
 }
 
-function stopSoundAndAlerts() {
-  stopRinging();
-  pendingOrderIds.clear();
-  showMessage("تم إيقاف الرنين. ستعود التنبيهات مع الطلبات الجديدة.");
-}
-
-$("soundBtn").addEventListener("click", async () => {
-  await enableSound();
-
-  if (soundEnabled && pendingOrderIds.size > 0) {
-    startRinging();
-  }
-});
-
-$("stopSoundBtn").addEventListener("click", stopSoundAndAlerts);
+$("soundBtn").addEventListener("click", enableSound);
 
 $("refreshBtn").addEventListener("click", loadOrders);
 
