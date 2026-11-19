@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DRP | Staff Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 :root {
   --bg:#160b20;
@@ -45,7 +46,6 @@ button {
 }
 button:disabled {opacity:.5;cursor:not-allowed}
 .secondary {background:#493057}
-.danger {background:#9b3434}
 .accept-btn {
   background:#168653;
   min-width:130px;
@@ -70,7 +70,6 @@ input {
 .login h2 {margin-top:0}
 .muted {color:#c9b5d4}
 .error {color:#ff9696;margin-top:12px}
-.success {color:#9ce6b0}
 .hidden {display:none!important}
 .stats {
   display:grid;
@@ -144,73 +143,141 @@ input {
   min-width:150px;
 }
 #message {margin:10px 0}
-.sound-active {
-  border:1px solid #d5a9f4;
-  box-shadow:0 0 15px #7139a0;
+
+/* شاشة فتح الصوت عند الحاجة فقط */
+#audioGate {
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:rgba(22,11,32,.97);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:25px;
+  cursor:pointer;
 }
+.audio-content {
+  max-width:380px;
+  background:#281435;
+  border:1px solid #7139a0;
+  border-radius:20px;
+  padding:30px 22px;
+}
+.audio-icon {font-size:55px}
+
 @media(max-width:550px) {
   .stats {grid-template-columns:1fr}
   header {align-items:flex-start}
 }
 </style>
 </head>
+
 <body>
+
+<!-- تظهر فقط إذا منع المتصفح تشغيل الصوت تلقائياً -->
+<div id="audioGate" class="hidden">
+  <div class="audio-content">
+    <div class="audio-icon">🔔</div>
+    <h2>DRP COFFEE</h2>
+    <p style="color:#e4c9f5;line-height:1.8">
+      اضغط بأي مكان للمتابعة وتشغيل تنبيهات الطلبات
+    </p>
+    <p style="font-size:13px;color:#b98add">
+      لمسة واحدة فقط
+    </p>
+  </div>
+</div>
 
 <header>
   <div>
     <h1>DRP COFFEE ☕</h1>
     <p>STAFF ORDER DASHBOARD</p>
   </div>
-  <button id="logoutBtn" class="secondary hidden">تسجيل الخروج</button>
+  <button id="logoutBtn" class="secondary hidden">
+    تسجيل الخروج
+  </button>
 </header>
 
 <main>
+
   <section id="loginSection" class="panel login">
     <h2>تسجيل دخول الموظفين</h2>
     <p class="muted">لوحة إدارة طلبات DRP</p>
+
     <form id="loginForm">
-      <input id="email" type="email" placeholder="البريد الإلكتروني" required>
-      <input id="password" type="password" placeholder="كلمة المرور" required>
-      <button type="submit" style="width:100%">دخول</button>
+      <input id="email" type="email"
+        placeholder="البريد الإلكتروني" required>
+
+      <input id="password" type="password"
+        placeholder="كلمة المرور" required>
+
+      <button type="submit" style="width:100%">
+        دخول
+      </button>
     </form>
+
     <p id="loginError" class="error"></p>
   </section>
 
   <section id="dashboard" class="hidden">
+
     <div class="panel">
       <div class="order-top">
         <div>
           <h2 style="margin:0">الطلبات</h2>
           <p class="muted">تصل الطلبات الجديدة تلقائياً</p>
         </div>
+
         <div class="actions">
-          <button id="soundBtn">🔔 تفعيل الصوت</button>
-          <button id="refreshBtn" class="secondary">تحديث</button>
+          <button id="refreshBtn" class="secondary">
+            تحديث
+          </button>
         </div>
       </div>
+
       <p id="message" class="muted"></p>
     </div>
 
     <div class="stats">
-      <div class="stat">طلبات جديدة<strong id="newCount">0</strong></div>
-      <div class="stat">قيد التحضير<strong id="prepCount">0</strong></div>
-      <div class="stat">جاهزة<strong id="readyCount">0</strong></div>
+      <div class="stat">
+        طلبات جديدة
+        <strong id="newCount">0</strong>
+      </div>
+
+      <div class="stat">
+        قيد التحضير
+        <strong id="prepCount">0</strong>
+      </div>
+
+      <div class="stat">
+        جاهزة
+        <strong id="readyCount">0</strong>
+      </div>
     </div>
 
     <div id="ordersList"></div>
+
   </section>
 </main>
 
 <script>
-const SUPABASE_URL = "https://oceudcjqwsfdqzvhyhlp.supabase.co";
-const SUPABASE_KEY = "sb_publishable_Q92rxmE2bYTTvvbpYU5ifg_BXN1bxOK";
+const SUPABASE_URL =
+  "https://oceudcjqwsfdqzvhyhlp.supabase.co";
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_KEY =
+  "sb_publishable_Q92rxmE2bYTTvvbpYU5ifg_BXN1bxOK";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
 const $ = id => document.getElementById(id);
 
 let orders = [];
 let channel = null;
+
 let soundEnabled = false;
 let audioContext = null;
 let ringingInterval = null;
@@ -225,6 +292,10 @@ const statuses = {
   ready: "جاهز",
   completed: "مكتمل"
 };
+
+/* -------------------------
+   واجهة الدخول والرسائل
+------------------------- */
 
 function showMessage(message, error=false) {
   $("message").textContent = message;
@@ -243,38 +314,50 @@ function showDashboard() {
   $("logoutBtn").classList.remove("hidden");
 }
 
+/* -------------------------
+   التحقق من صلاحية الموظف
+------------------------- */
+
 async function checkAdmin() {
-  const {data: {user}} = await db.auth.getUser();
+  const {data:{user}} = await db.auth.getUser();
 
   if (!user) {
     showLogin();
     return false;
   }
 
-  const {data, error} = await db
+  const {data,error} = await db
     .from("admin_users")
     .select("user_id")
-    .eq("user_id", user.id)
+    .eq("user_id",user.id)
     .maybeSingle();
 
   if (error || !data) {
     await db.auth.signOut();
     showLogin();
+
     $("loginError").textContent =
       "هذا الحساب غير مصرح له بدخول لوحة الإدارة.";
+
     return false;
   }
 
   return true;
 }
 
-$("loginForm").addEventListener("submit", async e => {
+/* -------------------------
+   تسجيل الدخول
+------------------------- */
+
+$("loginForm").addEventListener("submit",async e => {
   e.preventDefault();
-  $("loginError").textContent = "جاري تسجيل الدخول...";
+
+  $("loginError").textContent =
+    "جاري تسجيل الدخول...";
 
   const {error} = await db.auth.signInWithPassword({
-    email: $("email").value.trim(),
-    password: $("password").value
+    email:$("email").value.trim(),
+    password:$("password").value
   });
 
   if (error) {
@@ -286,33 +369,48 @@ $("loginForm").addEventListener("submit", async e => {
   await startDashboard();
 });
 
-$("logoutBtn").addEventListener("click", async () => {
+/* -------------------------
+   تسجيل الخروج
+------------------------- */
+
+$("logoutBtn").addEventListener("click",async () => {
   stopRinging();
 
-  if (channel) await db.removeChannel(channel);
+  if (channel) {
+    await db.removeChannel(channel);
+  }
+
   channel = null;
-
-  await db.auth.signOut();
-
   orders = [];
   pendingOrderIds.clear();
 
+  await db.auth.signOut();
   showLogin();
 });
 
+/* -------------------------
+   بدء لوحة الموظفين
+------------------------- */
+
 async function startDashboard() {
   const allowed = await checkAdmin();
+
   if (!allowed) return;
 
   showDashboard();
+
   await loadOrders(true);
   subscribeToOrders();
 }
 
+/* -------------------------
+   تحميل الطلبات
+------------------------- */
+
 async function loadOrders(initial=false) {
   showMessage("جاري تحميل الطلبات...");
 
-  const {data, error} = await db
+  const {data,error} = await db
     .from("orders")
     .select(`
       id,
@@ -329,10 +427,13 @@ async function loadOrders(initial=false) {
         milk_type
       )
     `)
-    .order("created_at", {ascending:false});
+    .order("created_at",{ascending:false});
 
   if (error) {
-    showMessage("خطأ في تحميل الطلبات: " + error.message, true);
+    showMessage(
+      "خطأ في تحميل الطلبات: " + error.message,
+      true
+    );
     return;
   }
 
@@ -344,11 +445,10 @@ async function loadOrders(initial=false) {
   showMessage("تم تحميل الطلبات بنجاح");
 }
 
-/*
-  الرنين مرتبط بكل الطلبات التي حالتها pending.
-  عند قبول طلب، ينحذف من المجموعة.
-  إذا بقي أي طلب غير مقبول، يستمر الرنين.
-*/
+/* -------------------------
+   تحديد الطلبات غير المقبولة
+------------------------- */
+
 function syncPendingOrders() {
   const currentPending = new Set(
     orders
@@ -364,6 +464,10 @@ function syncPendingOrders() {
     stopRinging();
   }
 }
+
+/* -------------------------
+   عرض الطلبات
+------------------------- */
 
 function renderOrders() {
   $("newCount").textContent =
@@ -385,12 +489,19 @@ function renderOrders() {
 
   list.innerHTML = orders.map(order => {
     const items = order.order_items || [];
-    const date = new Date(order.created_at).toLocaleString("ar-JO");
+
+    const date = new Date(
+      order.created_at
+    ).toLocaleString("ar-JO");
 
     return `
       <article class="order">
+
         <div class="order-top">
-          <h3>طلب #${escapeHTML(String(order.id).slice(0,8))}</h3>
+          <h3>
+            طلب #${escapeHTML(String(order.id).slice(0,8))}
+          </h3>
+
           <span class="status ${escapeHTML(order.status)}">
             ${statuses[order.status] || escapeHTML(order.status)}
           </span>
@@ -405,32 +516,43 @@ function renderOrders() {
 
         <div class="items">
           <strong>تفاصيل الطلب:</strong>
+
           ${items.map(item => {
-            const milk = item.milk_type && item.milk_type.trim()
+            const milk =
+              item.milk_type && item.milk_type.trim()
               ? item.milk_type
               : "غير محدد";
 
             return `
               <div class="item-line">
+
                 <strong>
-                  ${escapeHTML(item.product_name)} × ${Number(item.quantity)}
+                  ${escapeHTML(item.product_name)}
+                  × ${Number(item.quantity)}
                 </strong>
+
                 <div class="milk-info">
                   🥛 نوع الحليب: ${escapeHTML(milk)}
                 </div>
+
                 <div class="item-price">
                   السعر:
-                  ${(Number(item.unit_price) * Number(item.quantity)).toFixed(2)}
+                  ${(Number(item.unit_price) *
+                    Number(item.quantity)).toFixed(2)}
                   JD
                 </div>
+
               </div>
             `;
           }).join("")}
         </div>
 
-        <h3>المجموع: ${Number(order.total).toFixed(2)} JD</h3>
+        <h3>
+          المجموع: ${Number(order.total).toFixed(2)} JD
+        </h3>
 
         <div class="actions">
+
           ${
             order.status === "pending"
             ? `
@@ -444,24 +566,32 @@ function renderOrders() {
             : `
               <select id="status-${order.id}">
                 ${Object.entries(statuses).map(([key,label]) =>
-                  `<option value="${key}" ${order.status === key ? "selected" : ""}>
+                  `<option value="${key}"
+                    ${order.status === key ? "selected" : ""}>
                     ${label}
                   </option>`
                 ).join("")}
               </select>
+
               <button onclick="updateStatus('${order.id}')">
                 حفظ الحالة
               </button>
             `
           }
+
         </div>
+
       </article>
     `;
   }).join("");
 }
 
+/* -------------------------
+   حماية النصوص المعروضة
+------------------------- */
+
 function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
+  return String(value ?? "").replace(/[&<>"']/g,char => ({
     "&":"&amp;",
     "<":"&lt;",
     ">":"&gt;",
@@ -470,7 +600,10 @@ function escapeHTML(value) {
   })[char]);
 }
 
-/* قبول الطلب ينقله مباشرة إلى قيد التحضير */
+/* -------------------------
+   قبول الطلب
+------------------------- */
+
 async function acceptOrder(id) {
   const button = document.querySelector(
     `button[onclick="acceptOrder('${id}')"]`
@@ -484,15 +617,17 @@ async function acceptOrder(id) {
   const {error} = await db
     .from("orders")
     .update({status:"preparing"})
-    .eq("id", id)
-    .eq("status", "pending");
+    .eq("id",id)
+    .eq("status","pending");
 
   if (error) {
     alert("تعذر قبول الطلب: " + error.message);
+
     if (button) {
       button.disabled = false;
       button.textContent = "✓ قبول الطلب";
     }
+
     return;
   }
 
@@ -500,9 +635,15 @@ async function acceptOrder(id) {
   showMessage("تم قبول الطلب بنجاح ✓");
 }
 
-/* تحديث الحالات الأخرى */
+window.acceptOrder = acceptOrder;
+
+/* -------------------------
+   تحديث حالة الطلب
+------------------------- */
+
 async function updateStatus(id) {
   const select = $("status-" + id);
+
   if (!select) return;
 
   const status = select.value;
@@ -510,7 +651,7 @@ async function updateStatus(id) {
   const {error} = await db
     .from("orders")
     .update({status})
-    .eq("id", id);
+    .eq("id",id);
 
   if (error) {
     alert("تعذر تحديث الحالة: " + error.message);
@@ -522,22 +663,33 @@ async function updateStatus(id) {
 }
 
 window.updateStatus = updateStatus;
-window.acceptOrder = acceptOrder;
 
-/* استقبال الطلبات الجديدة وتحديثات حالتها */
+/* -------------------------
+   استقبال الطلبات والتحديثات مباشرة
+------------------------- */
+
 function subscribeToOrders() {
-  if (channel) db.removeChannel(channel);
+  if (channel) {
+    db.removeChannel(channel);
+  }
 
   channel = db
     .channel("drp-live-orders")
 
     .on(
       "postgres_changes",
-      {event:"INSERT", schema:"public", table:"orders"},
+      {
+        event:"INSERT",
+        schema:"public",
+        table:"orders"
+      },
       async payload => {
         showMessage("🔔 وصل طلب جديد!");
 
-        if (payload.new?.id && payload.new.status === "pending") {
+        if (
+          payload.new?.id &&
+          payload.new.status === "pending"
+        ) {
           pendingOrderIds.add(payload.new.id);
           startRinging();
         }
@@ -548,19 +700,21 @@ function subscribeToOrders() {
 
     .on(
       "postgres_changes",
-      {event:"UPDATE", schema:"public", table:"orders"},
+      {
+        event:"UPDATE",
+        schema:"public",
+        table:"orders"
+      },
       async payload => {
-        /*
-          إذا تغيرت حالة الطلب من pending إلى أي حالة أخرى،
-          سيتم تحديث المجموعة وإيقاف رنينه.
-        */
         await loadOrders();
       }
     )
 
     .subscribe(status => {
       if (status === "SUBSCRIBED") {
-        showMessage("متصل مباشرة — بانتظار الطلبات الجديدة");
+        showMessage(
+          "متصل مباشرة — بانتظار الطلبات الجديدة"
+        );
       }
 
       if (status === "CHANNEL_ERROR") {
@@ -572,14 +726,16 @@ function subscribeToOrders() {
     });
 }
 
-/* تفعيل الصوت بعد ضغط الموظف */
-async function enableSound() {
+/* -------------------------
+   تشغيل الصوت تلقائياً
+------------------------- */
+
+async function prepareAudio() {
   const AudioContextClass =
     window.AudioContext || window.webkitAudioContext;
 
   if (!AudioContextClass) {
-    alert("المتصفح لا يدعم الصوت.");
-    return;
+    return false;
   }
 
   try {
@@ -589,56 +745,74 @@ async function enableSound() {
       await audioContext.resume();
     }
 
-    soundEnabled = true;
+    soundEnabled = audioContext.state === "running";
 
-    $("soundBtn").textContent = "🔔 الصوت مفعّل";
-    $("soundBtn").classList.add("sound-active");
+    if (soundEnabled) {
+      $("audioGate").classList.add("hidden");
+
+      if (pendingOrderIds.size > 0) {
+        startRinging();
+      }
+    }
+
+    return soundEnabled;
+
+  } catch (error) {
+    console.log("Audio requires user interaction",error);
+    return false;
+  }
+}
+
+async function autoStartAudio() {
+  const enabled = await prepareAudio();
+
+  if (!enabled) {
+    $("audioGate").classList.remove("hidden");
+  }
+}
+
+/* لمسة واحدة فقط إذا منع Safari التشغيل التلقائي */
+async function unlockAudio() {
+  const enabled = await prepareAudio();
+
+  if (enabled) {
+    $("audioGate").classList.add("hidden");
+
+    showMessage("تم تشغيل تنبيهات الطلبات الصوتية ✓");
 
     if (pendingOrderIds.size > 0) {
       startRinging();
-    } else {
-      playAlert();
     }
-
-  } catch (error) {
-    console.error(error);
-    alert("تعذر تشغيل الصوت. تأكد من إعدادات الصوت في الجهاز.");
   }
 }
 
-/* إيقاف أي نغمات تعمل حالياً */
-function stopCurrentSounds() {
-  activeOscillators.forEach(oscillator => {
-    try {
-      oscillator.stop();
-    } catch (error) {}
-  });
+$("audioGate").addEventListener(
+  "pointerdown",
+  unlockAudio
+);
 
-  activeOscillators.clear();
-}
+/* -------------------------
+   نغمة التنبيه
+------------------------- */
 
-/* نغمة تنبيه قوية وطويلة */
 function playAlert() {
   if (!soundEnabled || !audioContext) return;
-
-  if (audioContext.state === "suspended") {
-    audioContext.resume();
-  }
+  if (audioContext.state !== "running") return;
 
   const start = audioContext.currentTime;
 
   const pattern = [
-    {time:0, freq:1100},
-    {time:0.65, freq:1450},
-    {time:1.3, freq:1100},
-    {time:1.95, freq:1450},
-    {time:3.0, freq:1100},
-    {time:3.65, freq:1450},
-    {time:4.3, freq:1100},
-    {time:4.95, freq:1450},
-    {time:6.0, freq:1100},
-    {time:6.65, freq:1450},
-    {time:7.3, freq:1100}
+    {time:0,freq:1100},
+    {time:0.65,freq:1450},
+    {time:1.3,freq:1100},
+    {time:1.95,freq:1450},
+    {time:3,freq:1100},
+    {time:3.65,freq:1450},
+    {time:4.3,freq:1100},
+    {time:4.95,freq:1450},
+    {time:6,freq:1100},
+    {time:6.65,freq:1450},
+    {time:7.3,freq:1100}
   ];
 
   pattern.forEach(note => {
@@ -646,20 +820,27 @@ function playAlert() {
     const gain = audioContext.createGain();
 
     oscillator.type = "sawtooth";
+
     oscillator.frequency.setValueAtTime(
       note.freq,
       start + note.time
     );
 
-    gain.gain.setValueAtTime(0.001, start + note.time);
+    gain.gain.setValueAtTime(
+      0.001,
+      start + note.time
+    );
+
     gain.gain.linearRampToValueAtTime(
       0.8,
       start + note.time + 0.04
     );
+
     gain.gain.setValueAtTime(
       0.8,
       start + note.time + 0.38
     );
+
     gain.gain.linearRampToValueAtTime(
       0.001,
       start + note.time + 0.48
@@ -681,10 +862,30 @@ function playAlert() {
   });
 }
 
-/* تشغيل الرنين ما دام هناك طلب واحد على الأقل لم يُقبل */
+/* -------------------------
+   إيقاف الأصوات الحالية
+------------------------- */
+
+function stopCurrentSounds() {
+  activeOscillators.forEach(oscillator => {
+    try {
+      oscillator.stop();
+    } catch (error) {}
+  });
+
+  activeOscillators.clear();
+}
+
+/* -------------------------
+   استمرار الرنين حتى قبول الطلبات
+------------------------- */
+
 function startRinging() {
   if (!soundEnabled || !audioContext) return;
-  if (pendingOrderIds.size === 0 || isRinging) return;
+
+  if (pendingOrderIds.size === 0 || isRinging) {
+    return;
+  }
 
   isRinging = true;
 
@@ -700,10 +901,10 @@ function startRinging() {
     }
 
     playAlert();
-  }, 8000);
+
+  },8000);
 }
 
-/* إيقاف الرنين عند قبول جميع الطلبات */
 function stopRinging() {
   isRinging = false;
 
@@ -715,12 +916,23 @@ function stopRinging() {
   stopCurrentSounds();
 }
 
-$("soundBtn").addEventListener("click", enableSound);
+/* -------------------------
+   تحديث يدوي
+------------------------- */
 
-$("refreshBtn").addEventListener("click", loadOrders);
+$("refreshBtn").addEventListener(
+  "click",
+  () => loadOrders()
+);
+
+/* -------------------------
+   بدء الموقع
+------------------------- */
 
 (async function init() {
-  const {data: {session}} = await db.auth.getSession();
+  await autoStartAudio();
+
+  const {data:{session}} = await db.auth.getSession();
 
   if (session) {
     await startDashboard();
@@ -729,5 +941,6 @@ $("refreshBtn").addEventListener("click", loadOrders);
   }
 })();
 </script>
+
 </body>
 </html>
