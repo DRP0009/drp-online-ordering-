@@ -116,6 +116,7 @@ h2{
   color:white;
   padding:10px;
   margin-top:12px;
+  transition:background .2s,transform .15s;
 }
 .add:active{transform:scale(.97)}
 .cart{
@@ -126,7 +127,27 @@ h2{
   border:1px solid #68447b;
   border-radius:18px;
 }
-.cart h2{margin:0 0 15px;padding:0}
+.cart h2{
+  margin:0 0 15px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.cart-count{
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  min-width:27px;
+  height:27px;
+  padding:0 8px;
+  background:#7139a0;
+  color:white;
+  font-size:13px;
+  border-radius:20px;
+  direction:ltr;
+}
 .cart-row{
   display:flex;
   justify-content:space-between;
@@ -167,6 +188,33 @@ footer{
   padding:25px;
   color:#bda9c9;
   font-size:13px;
+}
+
+/* Add to cart success message */
+.toast{
+  position:fixed;
+  bottom:25px;
+  left:50%;
+  transform:translate(-50%,20px);
+  background:linear-gradient(135deg,#7139a0,#542477);
+  color:#fff;
+  padding:14px 22px;
+  border-radius:14px;
+  box-shadow:0 8px 25px #0008;
+  font-weight:bold;
+  z-index:2000;
+  opacity:0;
+  visibility:hidden;
+  transition:all .25s ease;
+  text-align:center;
+  width:max-content;
+  max-width:90%;
+  pointer-events:none;
+}
+.toast.show{
+  opacity:1;
+  visibility:visible;
+  transform:translate(-50%,0);
 }
 
 /* Milk selection popup */
@@ -246,10 +294,18 @@ footer{
 placeholder="ابحث عن منتج..." oninput="render()">
 
 <div class="categories" id="categories"></div>
+
+<!-- Add to cart notification -->
+<div class="toast" id="cartToast" role="status" aria-live="polite"></div>
+
 <div class="menu" id="menu"></div>
 
 <div class="cart" id="cart">
-  <h2 id="cartTitle">سلة الطلبات 🛒</h2>
+  <h2>
+    <span id="cartHeading">سلة الطلبات 🛒</span>
+    <span class="cart-count" id="cartCount">0</span>
+  </h2>
+
   <div id="cartItems"></div>
   <div class="total" id="total">المجموع: 0.00 JD</div>
 
@@ -299,6 +355,7 @@ let lang = "ar";
 let category = "All";
 let cart = [];
 let pendingProductIndex = null;
+let toastTimer = null;
 
 const products = [
   {name:"Strawberry Refresher",price:2.50,cat:"Cold Drinks"},
@@ -380,9 +437,6 @@ const milkTypes = [
 ];
 
 const milkProducts = new Set([
-  "Strawberry Smoothie",
-  "Passion Fruit Smoothie",
-  "Mango Smoothie",
   "Matcha Latte",
   "Strawberry Matcha",
   "Mango Matcha",
@@ -418,7 +472,6 @@ function money(n){
   return Number(n).toFixed(2)+" JD";
 }
 
-// Milk surcharge: only oat, almond and lactose-free milk cost extra.
 function getMilkExtra(milk){
   if(
     milk==="حليب شوفان" ||
@@ -532,7 +585,7 @@ function updateMilkModalLanguage(){
   select.innerHTML=milkTypes.map(m => {
     const extra=getMilkExtra(m);
     const extraLabel=extra>0
-      ? (lang==="ar" ? " (+0.50 JD)" : " (+0.50 JD)")
+      ? " (+0.50 JD)"
       : (lang==="ar" ? " (بدون زيادة)" : " (No extra charge)");
 
     return `<option value="${m}">${milkLabel(m)}${extraLabel}</option>`;
@@ -556,6 +609,7 @@ function confirmMilk(){
   addItemToCart(index,milk);
 }
 
+/* Add product and show success notification */
 function addItemToCart(i,milk){
   const found=cart.find(x =>
     x.id===i && x.milk_type===milk
@@ -572,6 +626,25 @@ function addItemToCart(i,milk){
   }
 
   renderCart();
+  showCartToast();
+}
+
+/* Temporary success message */
+function showCartToast(){
+  const toast=document.getElementById("cartToast");
+
+  toast.textContent=tr(
+    "تمت إضافة المنتج إلى السلة ✓",
+    "Product added to cart ✓"
+  );
+
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+
+  toastTimer=setTimeout(()=>{
+    toast.classList.remove("show");
+  },2000);
 }
 
 function changeQty(index,n){
@@ -589,6 +662,13 @@ function changeQty(index,n){
 
 function renderCart(){
   const box=document.getElementById("cartItems");
+
+  /* Update cart quantity badge */
+  const cartCount=cart.reduce(
+    (sum,item)=>sum+item.qty,0
+  );
+
+  document.getElementById("cartCount").textContent=cartCount;
 
   if(cart.length===0){
     box.innerHTML=
@@ -639,7 +719,7 @@ function toggleLang(){
   document.getElementById("menuTitle").textContent=
     tr("قائمة المشروبات","OUR MENU");
 
-  document.getElementById("cartTitle").textContent=
+  document.getElementById("cartHeading").textContent=
     tr("سلة الطلبات 🛒","YOUR CART 🛒");
 
   document.getElementById("checkoutBtn").textContent=
