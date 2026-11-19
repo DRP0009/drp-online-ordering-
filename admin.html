@@ -135,6 +135,13 @@ input {
   min-width:150px;
 }
 #message {margin:10px 0}
+.sound-stop {
+  background:#a83232;
+}
+.sound-active {
+  border:1px solid #d5a9f4;
+  box-shadow:0 0 15px #7139a0;
+}
 @media(max-width:550px) {
   .stats {grid-template-columns:1fr}
   header {align-items:flex-start}
@@ -172,6 +179,7 @@ input {
         </div>
         <div class="actions">
           <button id="soundBtn">🔔 تفعيل الصوت</button>
+          <button id="stopSoundBtn" class="danger">🔇 إيقاف الرنين</button>
           <button id="refreshBtn" class="secondary">تحديث</button>
         </div>
       </div>
@@ -200,6 +208,10 @@ let orders = [];
 let channel = null;
 let soundEnabled = false;
 let audioContext = null;
+let ringingInterval = null;
+let isRinging = false;
+let knownOrderIds = new Set();
+let pendingOrderIds = new Set();
 
 const statuses = {
   pending: "جديد",
@@ -267,10 +279,15 @@ $("loginForm").addEventListener("submit", async e => {
 });
 
 $("logoutBtn").addEventListener("click", async () => {
+  stopRinging();
+
   if (channel) await db.removeChannel(channel);
   channel = null;
+
   await db.auth.signOut();
   orders = [];
+  knownOrderIds.clear();
+  pendingOrderIds.clear();
   showLogin();
 });
 
@@ -279,11 +296,11 @@ async function startDashboard() {
   if (!allowed) return;
 
   showDashboard();
-  await loadOrders();
+  await loadOrders(true);
   subscribeToOrders();
 }
 
-async function loadOrders() {
+async function loadOrders(initial=false) {
   showMessage("جاري تحميل الطلبات...");
 
   const {data, error} = await db
@@ -311,8 +328,32 @@ async function loadOrders() {
   }
 
   orders = data || [];
+
+  if (initial) {
+    knownOrderIds = new Set(orders.map(o => o.id));
+  } else {
+    orders.forEach(order => knownOrderIds.add(order.id));
+  }
+
+  syncPendingOrders();
   renderOrders();
   showMessage("تم تحميل الطلبات بنجاح");
+}
+
+function syncPendingOrders() {
+  const currentPending = new Set(
+    orders.filter(o => o.status === "pending").map(o => o.id)
+  );
+
+  pendingOrderIds.forEach(id => {
+    if (!currentPending.has(id)) {
+      pendingOrderIds.delete(id);
+    }
+  });
+
+  if (pendingOrderIds.size === 0) {
+    stopRinging();
+  }
 }
 
 function renderOrders() {
@@ -420,7 +461,16 @@ function subscribeToOrders() {
       "postgres_changes",
       {event:"INSERT", schema:"public", table:"orders"},
       async payload => {
-        playAlert();
+        const newOrder = payload.new;
+
+        if (newOrder?.id) {
+          knownOrderIds.add(newOrder.id);
+          if (newOrder.status === "pending") {
+            pendingOrderIds.add(newOrder.id);
+            startRinging();
+          }
+        }
+
         showMessage("🔔 وصل طلب جديد!");
         await loadOrders();
       }
@@ -435,7 +485,8 @@ function subscribeToOrders() {
     });
 }
 
-function enableSound() {
+/* Enable audio after an actual user click */
+async function enableSound() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 
   if (!AudioContextClass) {
@@ -443,18 +494,26 @@ function enableSound() {
     return;
   }
 
-  audioContext = audioContext || new AudioContextClass();
+  try {
+    audioContext = audioContext || new AudioContextClass();
 
-  if (audioContext.state === "suspended") {
-    audioContext.resume();
+    if (audioContext.state === "suspended") {
+      await audioContext.resume();
+    }
+
+    soundEnabled = true;
+    $("soundBtn").textContent = "🔔 الصوت مفعّل";
+    $("soundBtn").classList.add("sound-active");
+
+    playAlert();
+
+  } catch (error) {
+    console.error(error);
+    alert("تعذر تشغيل الصوت. تأكد من إعدادات الصوت في الجهاز.");
   }
-
-  soundEnabled = true;
-  $("soundBtn").textContent = "🔔 الصوت مفعّل";
-
-  playAlert();
 }
 
+/* Stronger and longer alert: approximately 8 seconds */
 function playAlert() {
   if (!soundEnabled || !audioContext) return;
 
@@ -462,34 +521,84 @@ function playAlert() {
     audioContext.resume();
   }
 
-  const volume = 1.0;
+  const start = audioContext.currentTime;
+  const duration = 8;
 
-  [0, 0.35, 0.7, 1.05, 1.4].forEach((delay, index) => {
+  const pattern = [
+    {time:0, freq:1100},
+    {time:0.65, freq:1450},
+    {time:1.3, freq:1100},
+    {time:1.95, freq:1450},
+    {time:3.0, freq:1100},
+    {time:3.65, freq:1450},
+    {time:4.3, freq:1100},
+    {time:4.95, freq:1450},
+    {time:6.0, freq:1100},
+    {time:6.65, freq:1450},
+    {time:7.3, freq:1100}
+  ];
+
+  pattern.forEach(note => {
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
 
-    oscillator.type = "square";
-    oscillator.frequency.value = index % 2 === 0 ? 1400 : 1000;
+    oscillator.type = "sawtooth";
+    oscillator.frequency.setValueAtTime(note.freq, start + note.time);
 
-    gain.gain.setValueAtTime(0.001, audioContext.currentTime + delay);
-    gain.gain.exponentialRampToValueAtTime(
-      volume,
-      audioContext.currentTime + delay + 0.02
-    );
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      audioContext.currentTime + delay + 0.3
-    );
+    gain.gain.setValueAtTime(0.001, start + note.time);
+    gain.gain.linearRampToValueAtTime(0.8, start + note.time + 0.04);
+    gain.gain.setValueAtTime(0.8, start + note.time + 0.38);
+    gain.gain.linearRampToValueAtTime(0.001, start + note.time + 0.48);
 
     oscillator.connect(gain);
     gain.connect(audioContext.destination);
 
-    oscillator.start(audioContext.currentTime + delay);
-    oscillator.stop(audioContext.currentTime + delay + 0.32);
+    oscillator.start(start + note.time);
+    oscillator.stop(start + note.time + 0.5);
   });
 }
 
-$("soundBtn").addEventListener("click", enableSound);
+function startRinging() {
+  if (!soundEnabled || pendingOrderIds.size === 0 || isRinging) return;
+
+  isRinging = true;
+  playAlert();
+
+  ringingInterval = setInterval(() => {
+    if (!soundEnabled || pendingOrderIds.size === 0) {
+      stopRinging();
+      return;
+    }
+
+    playAlert();
+  }, 10000);
+}
+
+function stopRinging() {
+  isRinging = false;
+
+  if (ringingInterval) {
+    clearInterval(ringingInterval);
+    ringingInterval = null;
+  }
+}
+
+function stopSoundAndAlerts() {
+  stopRinging();
+  pendingOrderIds.clear();
+  showMessage("تم إيقاف الرنين. ستعود التنبيهات مع الطلبات الجديدة.");
+}
+
+$("soundBtn").addEventListener("click", async () => {
+  await enableSound();
+
+  if (soundEnabled && pendingOrderIds.size > 0) {
+    startRinging();
+  }
+});
+
+$("stopSoundBtn").addEventListener("click", stopSoundAndAlerts);
+
 $("refreshBtn").addEventListener("click", loadOrders);
 
 (async function init() {
