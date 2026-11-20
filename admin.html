@@ -439,7 +439,8 @@ async function loadOrders(initial=false) {
         milk_type,
         syrups,
         extra_shot,
-        special_note
+        special_note,
+        flavor
       )
     `)
     .order("created_at",{ascending:false});
@@ -498,6 +499,16 @@ function renderItemCustomizations(item) {
       <div class="custom-info">
         🍯 السيرب:
         ${syrups.map(s => escapeHTML(s)).join("، ")}
+      </div>
+    `);
+  }
+
+  /* النكهة المختارة */
+  if (item.flavor && String(item.flavor).trim()) {
+    parts.push(`
+      <div class="custom-info">
+        🍓 النكهة:
+        ${escapeHTML(item.flavor)}
       </div>
     `);
   }
