@@ -17,330 +17,145 @@
 }
 *{box-sizing:border-box}
 body{
-  margin:0;
-  font-family:Arial,sans-serif;
+  margin:0;font-family:Arial,sans-serif;
   background:linear-gradient(145deg,#160b20,#301044);
   color:var(--white);
 }
 header{
-  padding:25px 18px;
-  text-align:center;
+  padding:25px 18px;text-align:center;
   background:linear-gradient(135deg,#301044,#7139a0);
   border-radius:0 0 28px 28px;
 }
-.logo{
-  font-size:38px;
-  font-weight:900;
-  letter-spacing:3px;
-}
+.logo{font-size:38px;font-weight:900;letter-spacing:3px}
 header p{color:#eee;margin:8px 0}
 .top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px;
-  max-width:1000px;
-  margin:auto;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:15px;max-width:1000px;margin:auto;
 }
-button{
-  border:0;
-  cursor:pointer;
-  font-weight:bold;
-  border-radius:12px;
-}
+button{border:0;cursor:pointer;font-weight:bold;border-radius:12px}
 button:disabled{opacity:.6;cursor:not-allowed}
-.lang{
-  background:#fff;
-  color:#301044;
-  padding:10px 15px;
-}
+.lang{background:#fff;color:#301044;padding:10px 15px}
 .search{
-  display:block;
-  width:calc(100% - 30px);
-  max-width:970px;
-  margin:5px auto 18px;
-  padding:14px;
-  border-radius:12px;
-  border:1px solid #69447e;
-  background:#281435;
-  color:white;
-  font-size:16px;
-  outline:none;
+  display:block;width:calc(100% - 30px);max-width:970px;
+  margin:5px auto 18px;padding:14px;border-radius:12px;
+  border:1px solid #69447e;background:#281435;color:white;
+  font-size:16px;outline:none;
 }
 .categories{
-  display:flex;
-  gap:9px;
-  overflow-x:auto;
-  padding:5px 15px 15px;
-  max-width:1000px;
-  margin:auto;
+  display:flex;gap:9px;overflow-x:auto;padding:5px 15px 15px;
+  max-width:1000px;margin:auto;
 }
-.cat{
-  flex-shrink:0;
-  padding:11px 17px;
-  background:#281435;
-  color:white;
-}
+.cat{flex-shrink:0;padding:11px 17px;background:#281435;color:white}
 .cat.active{background:#7139a0}
-h2{
-  max-width:970px;
-  margin:20px auto 12px;
-  padding:0 15px;
-}
+h2{max-width:970px;margin:20px auto 12px;padding:0 15px}
 .menu{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(155px,1fr));
-  gap:13px;
-  max-width:1000px;
-  padding:12px 15px;
-  margin:auto;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));
+  gap:13px;max-width:1000px;padding:12px 15px;margin:auto;
 }
 .item{
   background:linear-gradient(145deg,#321b40,#24112f);
-  border:1px solid #57366b;
-  border-radius:17px;
-  padding:16px 13px;
-  display:flex;
-  flex-direction:column;
-  min-height:145px;
+  border:1px solid #57366b;border-radius:17px;padding:16px 13px;
+  display:flex;flex-direction:column;min-height:145px;
 }
 .item h3{font-size:15px;margin:0 0 10px}
-.price{
-  color:#d9b6f4;
-  font-size:17px;
-  font-weight:bold;
-  margin-top:auto;
-}
+.price{color:#d9b6f4;font-size:17px;font-weight:bold;margin-top:auto}
 .add{
-  background:#7139a0;
-  color:white;
-  padding:10px;
-  margin-top:12px;
+  background:#7139a0;color:white;padding:10px;margin-top:12px;
   transition:background .2s,transform .15s;
 }
 .add:active{transform:scale(.97)}
 .cart{
-  max-width:970px;
-  margin:20px auto;
-  padding:18px;
-  background:#281435;
-  border:1px solid #68447b;
-  border-radius:18px;
+  max-width:970px;margin:20px auto;padding:18px;background:#281435;
+  border:1px solid #68447b;border-radius:18px;
 }
 .cart h2{
-  margin:0 0 15px;
-  padding:0;
-  display:flex;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:8px;
+  margin:0 0 15px;padding:0;display:flex;align-items:center;
+  flex-wrap:wrap;gap:8px;
 }
 .cart-count{
-  display:inline-flex;
-  justify-content:center;
-  align-items:center;
-  min-width:27px;
-  height:27px;
-  padding:0 8px;
-  background:#7139a0;
-  color:white;
-  font-size:13px;
-  border-radius:20px;
-  direction:ltr;
+  display:inline-flex;justify-content:center;align-items:center;
+  min-width:27px;height:27px;padding:0 8px;background:#7139a0;
+  color:white;font-size:13px;border-radius:20px;direction:ltr;
 }
 .cart-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  padding:12px 0;
-  border-bottom:1px solid #493052;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;padding:12px 0;border-bottom:1px solid #493052;
 }
 .cart-product{min-width:0;flex:1}
 .cart-product small{
-  display:block;
-  color:#d9b6f4;
-  margin-top:5px;
-  line-height:1.7;
+  display:block;color:#d9b6f4;margin-top:5px;line-height:1.7;
 }
 .qty{white-space:nowrap}
-.qty button{
-  background:#7139a0;
-  color:white;
-  padding:5px 10px;
-  margin:0 3px;
-}
-.total{
-  font-size:21px;
-  font-weight:bold;
-  color:#d9b6f4;
-  margin:18px 0;
-}
+.qty button{background:#7139a0;color:white;padding:5px 10px;margin:0 3px}
+.total{font-size:21px;font-weight:bold;color:#d9b6f4;margin:18px 0}
 .checkout{
-  width:100%;
-  background:#fff;
-  color:#301044;
-  padding:15px;
-  font-size:16px;
+  width:100%;background:#fff;color:#301044;padding:15px;font-size:16px;
 }
 .empty{text-align:center;color:#c4b5ce}
-footer{
-  text-align:center;
-  padding:25px;
-  color:#bda9c9;
-  font-size:13px;
-}
+footer{text-align:center;padding:25px;color:#bda9c9;font-size:13px}
 
-/* Add to cart notification */
 .toast{
-  position:fixed;
-  bottom:25px;
-  left:50%;
+  position:fixed;bottom:25px;left:50%;
   transform:translate(-50%,20px);
   background:linear-gradient(135deg,#7139a0,#542477);
-  color:#fff;
-  padding:14px 22px;
-  border-radius:14px;
-  box-shadow:0 8px 25px #0008;
-  font-weight:bold;
-  z-index:2000;
-  opacity:0;
-  visibility:hidden;
-  transition:all .25s ease;
-  text-align:center;
-  width:max-content;
-  max-width:90%;
-  pointer-events:none;
+  color:#fff;padding:14px 22px;border-radius:14px;
+  box-shadow:0 8px 25px #0008;font-weight:bold;z-index:2000;
+  opacity:0;visibility:hidden;transition:all .25s ease;
+  text-align:center;width:max-content;max-width:90%;pointer-events:none;
 }
-.toast.show{
-  opacity:1;
-  visibility:visible;
-  transform:translate(-50%,0);
-}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
 
-/* Customization modal */
 .modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:1000;
-  background:rgba(0,0,0,.78);
-  align-items:center;
-  justify-content:center;
-  padding:15px;
+  display:none;position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,.78);align-items:center;
+  justify-content:center;padding:15px;
 }
 .modal.show{display:flex}
 .modal-content{
-  width:100%;
-  max-width:430px;
-  max-height:90vh;
-  overflow-y:auto;
+  width:100%;max-width:430px;max-height:90vh;overflow-y:auto;
   background:linear-gradient(145deg,#321b40,#24112f);
-  border:1px solid #8055a0;
-  border-radius:20px;
-  padding:22px;
+  border:1px solid #8055a0;border-radius:20px;padding:22px;
   box-shadow:0 15px 50px #0008;
 }
-.modal-content h3{
-  margin:0 0 8px;
-  font-size:20px;
-}
+.modal-content h3{margin:0 0 8px;font-size:20px}
 .modal-content p{
-  color:#c4b5ce;
-  margin:0 0 17px;
-  font-size:14px;
-  line-height:1.7;
+  color:#c4b5ce;margin:0 0 17px;font-size:14px;line-height:1.7;
 }
-.custom-section{
-  margin:17px 0;
-}
-.custom-section h4{
-  margin:0 0 10px;
-  color:#e8d4f5;
-  font-size:15px;
-}
+.custom-section{margin:17px 0}
+.custom-section h4{margin:0 0 10px;color:#e8d4f5;font-size:15px}
 .custom-select{
-  width:100%;
-  padding:13px;
-  border-radius:12px;
-  border:1px solid #8055a0;
-  background:#160b20;
-  color:white;
-  font-size:15px;
+  width:100%;padding:13px;border-radius:12px;
+  border:1px solid #8055a0;background:#160b20;color:white;font-size:15px;
 }
-.option-list{
-  display:grid;
-  gap:9px;
-}
+.option-list{display:grid;gap:9px}
 .custom-option{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  background:#1d1027;
-  border:1px solid #503060;
-  border-radius:11px;
-  padding:12px;
-  cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;background:#1d1027;border:1px solid #503060;
+  border-radius:11px;padding:12px;cursor:pointer;
 }
-.custom-option span{
-  line-height:1.5;
-}
-.custom-option small{
-  color:#d5a9f4;
-  white-space:nowrap;
-}
+.custom-option span{line-height:1.5}
+.custom-option small{color:#d5a9f4;white-space:nowrap}
 .custom-option input{
-  width:19px;
-  height:19px;
-  accent-color:#a66bd1;
-  flex-shrink:0;
+  width:19px;height:19px;accent-color:#a66bd1;flex-shrink:0;
 }
 .note-input{
-  width:100%;
-  min-height:85px;
-  resize:vertical;
-  padding:13px;
-  border-radius:12px;
-  border:1px solid #8055a0;
-  background:#160b20;
-  color:white;
-  font:inherit;
-  outline:none;
+  width:100%;min-height:85px;resize:vertical;padding:13px;
+  border-radius:12px;border:1px solid #8055a0;
+  background:#160b20;color:white;font:inherit;outline:none;
 }
 .note-input::placeholder{color:#a995b5}
 .modal-price{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  margin:17px 0;
-  padding:13px;
-  border-radius:12px;
-  background:#1d1027;
-  color:#e5c9f7;
-  font-weight:bold;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;margin:17px 0;padding:13px;border-radius:12px;
+  background:#1d1027;color:#e5c9f7;font-weight:bold;
 }
 .modal-actions{
-  display:flex;
-  gap:10px;
-  position:sticky;
-  bottom:-22px;
-  padding:12px 0 0;
-  background:#291635;
+  display:flex;gap:10px;position:sticky;bottom:-22px;
+  padding:12px 0 0;background:#291635;
 }
-.modal-actions button{
-  flex:1;
-  padding:14px;
-}
-.confirm-custom{
-  background:#7139a0;
-  color:white;
-}
-.cancel-custom{
-  background:#493052;
-  color:white;
-}
+.modal-actions button{flex:1;padding:14px}
+.confirm-custom{background:#7139a0;color:white}
+.cancel-custom{background:#493052;color:white}
 .hidden{display:none!important}
 
 @media(max-width:550px){
@@ -367,9 +182,7 @@ footer{
 placeholder="ابحث عن منتج..." oninput="render()">
 
 <div class="categories" id="categories"></div>
-
 <div class="toast" id="cartToast" role="status" aria-live="polite"></div>
-
 <div class="menu" id="menu"></div>
 
 <div class="cart" id="cart">
@@ -377,20 +190,15 @@ placeholder="ابحث عن منتج..." oninput="render()">
     <span id="cartHeading">سلة الطلبات 🛒</span>
     <span class="cart-count" id="cartCount">0</span>
   </h2>
-
   <div id="cartItems"></div>
   <div class="total" id="total">المجموع: 0.00 JD</div>
 
   <div style="margin-bottom:15px">
     <input id="customerName" placeholder="اسم الزبون"
       style="width:100%;padding:13px;margin-bottom:10px;border-radius:10px">
-
-    <input id="customerPhone" placeholder="رقم الهاتف"
-      type="tel"
+    <input id="customerPhone" placeholder="رقم الهاتف" type="tel"
       style="width:100%;padding:13px;margin-bottom:10px;border-radius:10px">
-
-    <select id="branch"
-      style="width:100%;padding:13px;border-radius:10px">
+    <select id="branch" style="width:100%;padding:13px;border-radius:10px">
       <option value="">اختر الفرع</option>
       <option value="DRP شارع المدينة">DRP شارع المدينة</option>
       <option value="DRP شارع عبدالله غوشة">DRP شارع عبدالله غوشة</option>
@@ -404,10 +212,8 @@ placeholder="ابحث عن منتج..." oninput="render()">
 
 <footer>DRP COFFEE · THANK YOU FOR CHOOSING US ☕</footer>
 
-<!-- Customization Modal -->
 <div class="modal" id="customModal">
   <div class="modal-content">
-
     <h3 id="customTitle">تخصيص المشروب ☕</h3>
     <p id="customSubtitle">اختار الإضافات اللي بتحبها</p>
 
@@ -417,7 +223,14 @@ placeholder="ابحث عن منتج..." oninput="render()">
         onchange="updateCustomizationPrice()"></select>
     </div>
 
-    <div class="custom-section">
+    <div class="custom-section hidden" id="flavorSection">
+      <h4 id="flavorHeading">🍓 اختر النكهة</h4>
+      <select id="flavorSelect" class="custom-select">
+        <option value="">اختر النكهة</option>
+      </select>
+    </div>
+
+    <div class="custom-section hidden" id="syrupSection">
       <h4 id="syrupHeading">🍯 إضافات السيرب</h4>
       <div class="option-list" id="syrupOptions"></div>
     </div>
@@ -434,7 +247,7 @@ placeholder="ابحث عن منتج..." oninput="render()">
       </label>
     </div>
 
-    <div class="custom-section">
+    <div class="custom-section hidden" id="noteSection">
       <h4 id="noteHeading">📝 ملاحظة للباريستا (اختياري)</h4>
       <textarea id="specialNote" class="note-input"
         maxlength="500"
@@ -447,14 +260,9 @@ placeholder="ابحث عن منتج..." oninput="render()">
     </div>
 
     <div class="modal-actions">
-      <button class="cancel-custom" onclick="closeCustomModal()" id="cancelCustom">
-        إلغاء
-      </button>
-      <button class="confirm-custom" onclick="confirmCustomization()" id="confirmCustom">
-        إضافة للسلة
-      </button>
+      <button class="cancel-custom" onclick="closeCustomModal()" id="cancelCustom">إلغاء</button>
+      <button class="confirm-custom" onclick="confirmCustomization()" id="confirmCustom">إضافة للسلة</button>
     </div>
-
   </div>
 </div>
 
@@ -535,9 +343,7 @@ const products = [
   {name:"Hot Caramel Macchiato",price:2.75,cat:"Hot Coffee"}
 ];
 
-const categories = [
-  "All","Cold Drinks","Cold Coffee","Hot Coffee","Desserts"
-];
+const categories = ["All","Cold Drinks","Cold Coffee","Hot Coffee","Desserts"];
 
 const milkTypes = [
   "حليب عادي",
@@ -547,39 +353,121 @@ const milkTypes = [
   "حليب خالي اللاكتوز"
 ];
 
-const milkProducts = new Set([
-  "Strawberry Smoothie",
-  "Passion Fruit Smoothie",
-  "Mango Smoothie",
-  "Matcha Latte",
-  "Strawberry Matcha",
-  "Mango Matcha",
-  "Iced Latte",
-  "Spanish Latte",
-  "Pistachio Latte",
-  "Caramel Latte",
-  "Caramel Macchiato",
-  "Dark Mocha",
-  "White Mocha",
-  "Matcha Frappe",
-  "Frappe Vanilla",
-  "Frappe Chocolate",
-  "Frappe Caramel",
-  "Flat White",
-  "Cinnamon Spice Latte",
-  "Coffee Latte",
-  "Cappuccino",
-  "Hot Chocolate",
-  "Hot Choco Marshmallow",
-  "Hot Pistachio",
-  "Hot Caramel Macchiato"
-]);
-
 const syrups = [
   {name:"Caramel",ar:"كراميل"},
   {name:"Vanilla",ar:"فانيلا"},
   {name:"Hazelnut",ar:"بندق"}
 ];
+
+const flavors = [
+  {name:"Peach",ar:"خوخ"},
+  {name:"Passion Fruit",ar:"باشن فروت"},
+  {name:"Raspberry",ar:"رازبري"}
+];
+
+/*
+  إعدادات التخصيص حسب اسم المنتج والفئة.
+  أي منتج غير موجود هنا لا يحتاج نافذة تخصيص.
+*/
+const FULL = {
+  milk:true,
+  syrups:["Caramel","Vanilla","Hazelnut"],
+  shot:true,
+  note:true
+};
+
+const customizationRules = {
+  "Cold Drinks|Iced Tea": {
+    flavor:true
+  },
+  "Cold Drinks|Mojito Red Bull": {
+    flavor:true
+  },
+  "Cold Drinks|Matcha Latte": {
+    syrups:["Vanilla"],
+    note:true
+  },
+  "Cold Drinks|Strawberry Matcha": {
+    milk:true
+  },
+  "Cold Drinks|Mango Matcha": {
+    milk:true
+  },
+
+  "Cold Coffee|V60": {},
+  "Cold Coffee|Iced Americano": {
+    shot:true,note:true
+  },
+  "Cold Coffee|Milkshake Coffee": {
+    shot:true,note:true
+  },
+  "Cold Coffee|Milkshake Caramel": {
+    shot:true,note:true
+  },
+  "Cold Coffee|Iced Latte": FULL,
+  "Cold Coffee|Spanish Latte": FULL,
+  "Cold Coffee|Pistachio Latte": FULL,
+  "Cold Coffee|Caramel Latte": FULL,
+  "Cold Coffee|Caramel Macchiato": {
+    milk:true,shot:true,note:true
+  },
+  "Cold Coffee|Dark Mocha": {
+    milk:true,shot:true,note:true
+  },
+  "Cold Coffee|White Mocha": {
+    milk:true,shot:true,note:true
+  },
+  "Cold Coffee|Matcha Frappe": {
+    milk:true,note:true
+  },
+  "Cold Coffee|Frappe Vanilla": {
+    shot:true,note:true
+  },
+  "Cold Coffee|Frappe Chocolate": {
+    shot:true,note:true
+  },
+  "Cold Coffee|Frappe Caramel": {
+    shot:true,note:true
+  },
+  "Cold Coffee|Salted Caramel": {
+    milk:true,shot:true,note:true
+  },
+
+  "Hot Coffee|Espresso": {},
+  "Hot Coffee|Turkish Coffee": {},
+  "Hot Coffee|American": {},
+  "Hot Coffee|Flat White": FULL,
+  "Hot Coffee|Americano": {
+    milk:true,shot:true,note:true
+  },
+  "Hot Coffee|Cinnamon Spice Latte": {
+    milk:true,shot:true,note:true
+  },
+  "Hot Coffee|Coffee Latte": FULL,
+  "Hot Coffee|Spanish Latte": FULL,
+  "Hot Coffee|Caramel Latte": FULL,
+  "Hot Coffee|Dark Mocha": {
+    milk:true,shot:true,note:true
+  },
+  "Hot Coffee|White Mocha": {
+    milk:true,shot:true,note:true
+  },
+  "Hot Coffee|Cappuccino": FULL,
+  "Hot Coffee|V60": {},
+  "Hot Coffee|Hot Chocolate": {
+    milk:true,note:true
+  },
+  "Hot Coffee|Hot Choco Marshmallow": {
+    milk:true,shot:true,note:true
+  },
+  "Hot Coffee|Matcha Latte": {
+    syrups:["Vanilla"],note:true
+  },
+  "Hot Coffee|Hot Pistachio": FULL,
+  "Hot Coffee|Hot Caramel Macchiato": {
+    milk:true,shot:true,note:true
+  }
+};
 
 function tr(ar,en){
   return lang==="ar"?ar:en;
@@ -589,30 +477,26 @@ function money(n){
   return Number(n).toFixed(2)+" JD";
 }
 
+function getRule(product){
+  return customizationRules[product.cat+"|"+product.name] || null;
+}
+
 function getMilkExtra(milk){
   if(
     milk==="حليب شوفان" ||
     milk==="حليب اللوز" ||
     milk==="حليب خالي اللاكتوز"
-  ){
-    return 0.50;
-  }
-  return 0;
-}
+  ) return 0.50;
 
-function isCoffeeProduct(product){
-  return product.cat==="Cold Coffee" ||
-         product.cat==="Hot Coffee";
+  return 0;
 }
 
 function getItemUnitPrice(item){
   const product=products[item.id];
-
-  const milkExtra=getMilkExtra(item.milk_type);
-  const syrupExtra=(item.syrups || []).length*SYRUP_PRICE;
-  const shotExtra=item.extra_shot?EXTRA_SHOT_PRICE:0;
-
-  return product.price+milkExtra+syrupExtra+shotExtra;
+  return product.price+
+    getMilkExtra(item.milk_type)+
+    (item.syrups || []).length*SYRUP_PRICE+
+    (item.extra_shot?EXTRA_SHOT_PRICE:0);
 }
 
 function milkLabel(milk){
@@ -629,22 +513,25 @@ function milkLabel(milk){
   return milk;
 }
 
-function syrupLabel(syrup){
-  const found=syrups.find(s=>s.name===syrup);
-  if(!found)return syrup;
-  return lang==="ar"?found.ar:found.name;
+function syrupLabel(name){
+  const found=syrups.find(s=>s.name===name);
+  return found ? (lang==="ar"?found.ar:found.name) : name;
+}
+
+function flavorLabel(name){
+  const found=flavors.find(f=>f.name===name);
+  return found ? (lang==="ar"?found.ar:found.name) : name;
 }
 
 function renderCategories(){
-  document.getElementById("categories").innerHTML =
-    categories.map(c =>
-      `<button class="cat ${category===c?'active':''}"
-        onclick="setCategory('${c}')">${categoryName(c)}</button>`
-    ).join("");
+  document.getElementById("categories").innerHTML=categories.map(c=>
+    `<button class="cat ${category===c?'active':''}"
+      onclick="setCategory('${c}')">${categoryName(c)}</button>`
+  ).join("");
 }
 
 function categoryName(c){
-  if(lang==="en") return c==="All"?"All":c;
+  if(lang==="en") return c;
 
   return {
     "All":"الكل",
@@ -665,7 +552,7 @@ function render(){
 
   const search=document.getElementById("search").value.toLowerCase();
 
-  const filtered=products.filter(p =>
+  const filtered=products.filter(p=>
     (category==="All" || p.cat===category) &&
     p.name.toLowerCase().includes(search)
   );
@@ -674,7 +561,7 @@ function render(){
     const i=products.indexOf(p);
 
     return `<div class="item">
-      <h3>${p.name}</h3>
+      <h3>${escapeHTML(p.name)}</h3>
       <div class="price">${money(p.price)}</div>
       <button class="add" onclick="addToCart(${i})">
         ${tr("أضف للسلة +","Add to cart +")}
@@ -685,17 +572,19 @@ function render(){
   renderCart();
 }
 
-/* فتح نافذة التخصيص للمشروبات */
+/* فتح نافذة التخصيص فقط عند وجود خيارات */
 
 function addToCart(i){
   const product=products[i];
+  const rule=getRule(product);
 
-  if(product.cat==="Desserts"){
+  if(!rule || Object.keys(rule).length===0){
     addItemToCart(i,{
       milk_type:null,
       syrups:[],
       extra_shot:false,
-      special_note:""
+      special_note:"",
+      flavor:null
     });
     return;
   }
@@ -703,23 +592,25 @@ function addToCart(i){
   pendingProductIndex=i;
   resetCustomization();
 
-  const hasMilk=milkProducts.has(product.name);
-  const hasShot=isCoffeeProduct(product);
-
   document.getElementById("milkSection")
-    .classList.toggle("hidden",!hasMilk);
+    .classList.toggle("hidden",!rule.milk);
+
+  document.getElementById("flavorSection")
+    .classList.toggle("hidden",!rule.flavor);
+
+  document.getElementById("syrupSection")
+    .classList.toggle("hidden",!rule.syrups || !rule.syrups.length);
 
   document.getElementById("shotSection")
-    .classList.toggle("hidden",!hasShot);
+    .classList.toggle("hidden",!rule.shot);
 
-  document.getElementById("customTitle").textContent=
-    product.name+" ☕";
+  document.getElementById("noteSection")
+    .classList.toggle("hidden",!rule.note);
+
+  document.getElementById("customTitle").textContent=product.name+" ☕";
 
   document.getElementById("customSubtitle").textContent=
-    tr(
-      "خصص مشروبك بالطريقة اللي بتحبها",
-      "Customize your drink the way you like"
-    );
+    tr("اختار الخيارات المتاحة لمشروبك","Choose the available options for your drink");
 
   document.getElementById("customModal").classList.add("show");
 
@@ -729,9 +620,9 @@ function addToCart(i){
 
 function resetCustomization(){
   document.getElementById("milkSelect").value="حليب عادي";
+  document.getElementById("flavorSelect").value="";
   document.getElementById("extraShot").checked=false;
   document.getElementById("specialNote").value="";
-
   document.querySelectorAll(".syrup-checkbox").forEach(input=>{
     input.checked=false;
   });
@@ -742,6 +633,9 @@ function resetCustomization(){
 function updateCustomizationLanguage(){
   document.getElementById("milkHeading").textContent=
     tr("🥛 نوع الحليب","🥛 Milk type");
+
+  document.getElementById("flavorHeading").textContent=
+    tr("🍓 اختر النكهة","🍓 Choose flavor");
 
   document.getElementById("syrupHeading").textContent=
     tr("🍯 إضافات السيرب","🍯 Syrup additions");
@@ -756,10 +650,7 @@ function updateCustomizationLanguage(){
     tr("📝 ملاحظة للباريستا (اختياري)","📝 Note for barista (optional)");
 
   document.getElementById("specialNote").placeholder=
-    tr(
-      "مثلاً: سكر قليل، بدون ثلج...",
-      "Example: Less sugar, no ice..."
-    );
+    tr("مثلاً: سكر قليل، بدون ثلج...","Example: Less sugar, no ice...");
 
   document.getElementById("priceLabel").textContent=
     tr("السعر النهائي","Final price");
@@ -770,37 +661,36 @@ function updateCustomizationLanguage(){
   document.getElementById("confirmCustom").textContent=
     tr("إضافة للسلة","Add to cart");
 
-  const milkSelect=document.getElementById("milkSelect");
-
-  milkSelect.innerHTML=milkTypes.map(m=>{
+  document.getElementById("milkSelect").innerHTML=milkTypes.map(m=>{
     const extra=getMilkExtra(m);
-
     const extraLabel=extra>0
       ? " (+0.50 JD)"
       : tr(" (بدون زيادة)"," (No extra charge)");
 
-    return `<option value="${m}">
-      ${milkLabel(m)}${extraLabel}
-    </option>`;
+    return `<option value="${m}">${milkLabel(m)}${extraLabel}</option>`;
   }).join("");
 
-  milkSelect.value="حليب عادي";
+  const rule=getRule(products[pendingProductIndex]);
+  const allowed=rule.syrups || [];
 
   document.getElementById("syrupOptions").innerHTML=
-    syrups.map(s=>`
+    syrups.filter(s=>allowed.includes(s.name)).map(s=>`
       <label class="custom-option">
         <span>${syrupLabel(s.name)}</span>
         <span style="display:flex;align-items:center;gap:9px">
           <small>+0.50 JD</small>
-          <input
-            class="syrup-checkbox"
-            type="checkbox"
-            value="${s.name}"
-            onchange="updateCustomizationPrice()"
-          >
+          <input class="syrup-checkbox" type="checkbox"
+            value="${s.name}" onchange="updateCustomizationPrice()">
         </span>
       </label>
     `).join("");
+
+  document.getElementById("flavorSelect").innerHTML=`
+    <option value="">${tr("اختر النكهة","Select flavor")}</option>
+    ${flavors.map(f=>`
+      <option value="${f.name}">${flavorLabel(f.name)}</option>
+    `).join("")}
+  `;
 }
 
 /* السعر المباشر */
@@ -815,26 +705,23 @@ function updateCustomizationPrice(){
   if(pendingProductIndex===null)return;
 
   const product=products[pendingProductIndex];
+  const rule=getRule(product);
 
-  const milk=milkProducts.has(product.name)
+  const milk=rule.milk
     ? document.getElementById("milkSelect").value
     : null;
 
   const selectedSyrups=getSelectedSyrups();
-  const extraShot=
-    isCoffeeProduct(product) &&
+  const extraShot=!!rule.shot &&
     document.getElementById("extraShot").checked;
 
-  const price=
-    product.price+
+  const price=product.price+
     getMilkExtra(milk)+
     selectedSyrups.length*SYRUP_PRICE+
     (extraShot?EXTRA_SHOT_PRICE:0);
 
   document.getElementById("customPrice").textContent=money(price);
 }
-
-/* إغلاق نافذة التخصيص */
 
 function closeCustomModal(){
   document.getElementById("customModal").classList.remove("show");
@@ -848,25 +735,32 @@ function confirmCustomization(){
 
   const index=pendingProductIndex;
   const product=products[index];
+  const rule=getRule(product);
 
-  const milk=milkProducts.has(product.name)
-    ? document.getElementById("milkSelect").value
+  const flavor=rule.flavor
+    ? document.getElementById("flavorSelect").value
     : null;
 
-  const selectedSyrups=getSelectedSyrups();
-
-  const extraShot=
-    isCoffeeProduct(product) &&
-    document.getElementById("extraShot").checked;
-
-  const specialNote=
-    document.getElementById("specialNote").value.trim();
+  if(rule.flavor && !flavor){
+    alert(tr("يرجى اختيار النكهة أولاً","Please select a flavor first"));
+    return;
+  }
 
   const customization={
-    milk_type:milk,
-    syrups:selectedSyrups,
-    extra_shot:extraShot,
-    special_note:specialNote
+    milk_type:rule.milk
+      ? document.getElementById("milkSelect").value
+      : null,
+
+    syrups:rule.syrups ? getSelectedSyrups() : [],
+
+    extra_shot:!!rule.shot &&
+      document.getElementById("extraShot").checked,
+
+    special_note:rule.note
+      ? document.getElementById("specialNote").value.trim()
+      : "",
+
+    flavor
   };
 
   closeCustomModal();
@@ -880,7 +774,8 @@ function addItemToCart(i,custom){
     milk_type:null,
     syrups:[],
     extra_shot:false,
-    special_note:""
+    special_note:"",
+    flavor:null
   };
 
   const key=JSON.stringify({
@@ -888,7 +783,8 @@ function addItemToCart(i,custom){
     milk_type:customization.milk_type,
     syrups:customization.syrups,
     extra_shot:customization.extra_shot,
-    special_note:customization.special_note
+    special_note:customization.special_note,
+    flavor:customization.flavor
   });
 
   const found=cart.find(x=>x.key===key);
@@ -903,6 +799,7 @@ function addItemToCart(i,custom){
       syrups:[...customization.syrups],
       extra_shot:customization.extra_shot,
       special_note:customization.special_note,
+      flavor:customization.flavor,
       key
     });
   }
@@ -922,7 +819,6 @@ function showCartToast(){
   );
 
   toast.classList.add("show");
-
   clearTimeout(toastTimer);
 
   toastTimer=setTimeout(()=>{
@@ -937,10 +833,7 @@ function changeQty(index,n){
   if(!item)return;
 
   item.qty+=n;
-
-  if(item.qty<=0){
-    cart.splice(index,1);
-  }
+  if(item.qty<=0)cart.splice(index,1);
 
   renderCart();
 }
@@ -950,10 +843,12 @@ function changeQty(index,n){
 function getCartCustomizationHTML(item){
   const details=[];
 
+  if(item.flavor){
+    details.push(`${tr("النكهة: ","Flavor: ")}${flavorLabel(item.flavor)}`);
+  }
+
   if(item.milk_type){
-    details.push(
-      `${tr("الحليب: ","Milk: ")}${milkLabel(item.milk_type)}`
-    );
+    details.push(`${tr("الحليب: ","Milk: ")}${milkLabel(item.milk_type)}`);
   }
 
   if(item.syrups && item.syrups.length){
@@ -963,15 +858,11 @@ function getCartCustomizationHTML(item){
   }
 
   if(item.extra_shot){
-    details.push(
-      tr("Extra Shot","Extra Shot")
-    );
+    details.push("Extra Shot");
   }
 
   if(item.special_note){
-    details.push(
-      `${tr("ملاحظة: ","Note: ")}${item.special_note}`
-    );
+    details.push(`${tr("ملاحظة: ","Note: ")}${item.special_note}`);
   }
 
   return details.map(d=>`<small>${escapeHTML(d)}</small>`).join("");
@@ -994,15 +885,11 @@ function escapeHTML(value){
 function renderCart(){
   const box=document.getElementById("cartItems");
 
-  const cartCount=cart.reduce(
-    (sum,item)=>sum+item.qty,0
-  );
-
+  const cartCount=cart.reduce((sum,item)=>sum+item.qty,0);
   document.getElementById("cartCount").textContent=cartCount;
 
   if(cart.length===0){
-    box.innerHTML=
-      `<p class="empty">${tr("السلة فارغة حالياً","Your cart is empty")}</p>`;
+    box.innerHTML=`<p class="empty">${tr("السلة فارغة حالياً","Your cart is empty")}</p>`;
   }else{
     box.innerHTML=cart.map((x,index)=>{
       const p=products[x.id];
@@ -1012,12 +899,9 @@ function renderCart(){
       return `<div class="cart-row">
         <div class="cart-product">
           <strong>${escapeHTML(p.name)}</strong>
-
           ${getCartCustomizationHTML(x)}
-
           <small>${money(lineTotal)}</small>
         </div>
-
         <div class="qty">
           <button onclick="changeQty(${index},-1)">−</button>
           ${x.qty}
@@ -1027,9 +911,7 @@ function renderCart(){
     }).join("");
   }
 
-  const total=cart.reduce(
-    (sum,x)=>sum+getItemUnitPrice(x)*x.qty,0
-  );
+  const total=cart.reduce((sum,x)=>sum+getItemUnitPrice(x)*x.qty,0);
 
   document.getElementById("total").textContent=
     tr("المجموع: ","Total: ")+money(total);
@@ -1038,6 +920,12 @@ function renderCart(){
 /* تغيير اللغة */
 
 function toggleLang(){
+  const oldMilk=document.getElementById("milkSelect").value;
+  const oldSyrups=getSelectedSyrups();
+  const oldShot=document.getElementById("extraShot").checked;
+  const oldNote=document.getElementById("specialNote").value;
+  const oldFlavor=document.getElementById("flavorSelect").value;
+
   lang=lang==="ar"?"en":"ar";
 
   document.documentElement.lang=lang;
@@ -1068,44 +956,13 @@ function toggleLang(){
     tr("اختر الفرع","Select branch");
 
   if(pendingProductIndex!==null){
-    const product=products[pendingProductIndex];
-
     document.getElementById("customTitle").textContent=
-      product.name+" ☕";
+      products[pendingProductIndex].name+" ☕";
 
     updateCustomizationLanguage();
 
-    // الحفاظ على اختيارات الزبون عند تغيير اللغة
-    document.getElementById("milkSelect").value=
-      milkProducts.has(product.name)
-      ? currentMilkValue
-      : "حليب عادي";
-  }
-
-  render();
-}
-
-/* حفظ اختيار الحليب عند تغيير اللغة */
-let currentMilkValue="حليب عادي";
-
-document.getElementById("milkSelect").addEventListener("change",()=>{
-  currentMilkValue=document.getElementById("milkSelect").value;
-  updateCustomizationPrice();
-});
-
-/* تحديث اللغة داخل النافذة مع الحفاظ على الاختيارات */
-const originalToggleLang=toggleLang;
-
-toggleLang=function(){
-  const oldMilk=document.getElementById("milkSelect").value;
-  const oldSyrups=getSelectedSyrups();
-  const oldShot=document.getElementById("extraShot").checked;
-  const oldNote=document.getElementById("specialNote").value;
-
-  originalToggleLang();
-
-  if(pendingProductIndex!==null){
     document.getElementById("milkSelect").value=oldMilk;
+    document.getElementById("flavorSelect").value=oldFlavor;
 
     document.querySelectorAll(".syrup-checkbox").forEach(input=>{
       input.checked=oldSyrups.includes(input.value);
@@ -1116,7 +973,9 @@ toggleLang=function(){
 
     updateCustomizationPrice();
   }
-};
+
+  render();
+}
 
 /* إرسال الطلب */
 
@@ -1126,14 +985,9 @@ async function checkout(){
     return;
   }
 
-  const customerName=
-    document.getElementById("customerName").value.trim();
-
-  const customerPhone=
-    document.getElementById("customerPhone").value.trim();
-
-  const branch=
-    document.getElementById("branch").value;
+  const customerName=document.getElementById("customerName").value.trim();
+  const customerPhone=document.getElementById("customerPhone").value.trim();
+  const branch=document.getElementById("branch").value;
 
   if(!customerName || !customerPhone || !branch){
     alert(tr(
@@ -1143,19 +997,17 @@ async function checkout(){
     return;
   }
 
-  /* إرسال كل التخصيصات للسيرفر */
-
   const items=cart.map(x=>({
     name:products[x.id].name,
     quantity:x.qty,
     milk_type:x.milk_type,
     syrups:x.syrups || [],
     extra_shot:!!x.extra_shot,
-    special_note:x.special_note || ""
+    special_note:x.special_note || "",
+    flavor:x.flavor || null
   }));
 
   const btn=document.getElementById("checkoutBtn");
-
   btn.disabled=true;
   btn.textContent=tr("جاري إرسال الطلب...","Sending order...");
 
@@ -1171,8 +1023,8 @@ async function checkout(){
         body:JSON.stringify({
           customer_name:customerName,
           customer_phone:customerPhone,
-          branch:branch,
-          items:items
+          branch,
+          items
         })
       }
     );
@@ -1187,11 +1039,8 @@ async function checkout(){
       tr(
         "تم استلام طلبك بنجاح ❤️\nرقم الطلب: ",
         "Your order was received ❤️\nOrder number: "
-      )
-      +result.order_id
-      +"\n"
-      +tr("المجموع: ","Total: ")
-      +money(result.total)
+      )+result.order_id+"\n"+
+      tr("المجموع: ","Total: ")+money(result.total)
     );
 
     cart=[];
