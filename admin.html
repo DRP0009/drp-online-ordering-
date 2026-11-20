@@ -105,7 +105,7 @@ input {
   line-height:1.9;
 }
 .item-line {
-  padding:9px 0;
+  padding:12px 0;
   border-bottom:1px solid #493057;
 }
 .item-line:last-child {border-bottom:0}
@@ -114,9 +114,26 @@ input {
   font-size:14px;
   margin-top:3px;
 }
+.custom-info {
+  color:#e6d9ed;
+  font-size:14px;
+  margin-top:5px;
+  line-height:1.8;
+}
+.note-info {
+  margin-top:9px;
+  padding:10px 12px;
+  border-radius:9px;
+  background:#382047;
+  border-right:3px solid #d5a9f4;
+  color:#fff;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
 .item-price {
   color:#fff;
   font-weight:bold;
+  margin-top:5px;
 }
 .status {
   display:inline-block;
@@ -143,6 +160,10 @@ input {
   min-width:150px;
 }
 #message {margin:10px 0}
+.total-price {
+  color:#e4c9f5;
+  font-size:20px;
+}
 
 /* شاشة تفعيل الصوت */
 #audioGate {
@@ -415,7 +436,10 @@ async function loadOrders(initial=false) {
         product_name,
         quantity,
         unit_price,
-        milk_type
+        milk_type,
+        syrups,
+        extra_shot,
+        special_note
       )
     `)
     .order("created_at",{ascending:false});
@@ -450,6 +474,60 @@ function syncPendingOrders() {
   } else {
     stopRinging();
   }
+}
+
+/* عرض تخصيصات المنتج */
+
+function renderItemCustomizations(item) {
+  const parts = [];
+
+  if (item.milk_type) {
+    parts.push(`
+      <div class="milk-info">
+        🥛 نوع الحليب: ${escapeHTML(item.milk_type)}
+      </div>
+    `);
+  }
+
+  const syrups = Array.isArray(item.syrups)
+    ? item.syrups
+    : [];
+
+  if (syrups.length > 0) {
+    parts.push(`
+      <div class="custom-info">
+        🍯 السيرب:
+        ${syrups.map(s => escapeHTML(s)).join("، ")}
+      </div>
+    `);
+  }
+
+  if (item.extra_shot === true) {
+    parts.push(`
+      <div class="custom-info">
+        ☕ Extra Shot: مضاف
+      </div>
+    `);
+  }
+
+  if (item.special_note && String(item.special_note).trim()) {
+    parts.push(`
+      <div class="note-info">
+        📝 ملاحظة للباريستا:
+        ${escapeHTML(item.special_note)}
+      </div>
+    `);
+  }
+
+  if (parts.length === 0) {
+    return `
+      <div class="custom-info">
+        بدون إضافات
+      </div>
+    `;
+  }
+
+  return parts.join("");
 }
 
 /* عرض الطلبات */
@@ -503,26 +581,21 @@ function renderOrders() {
           <strong>تفاصيل الطلب:</strong>
 
           ${items.map(item => {
-            const milk =
-              item.milk_type && item.milk_type.trim()
-              ? item.milk_type
-              : "غير محدد";
+            const quantity = Number(item.quantity) || 0;
+            const unitPrice = Number(item.unit_price) || 0;
 
             return `
               <div class="item-line">
                 <strong>
                   ${escapeHTML(item.product_name)}
-                  × ${Number(item.quantity)}
+                  × ${quantity}
                 </strong>
 
-                <div class="milk-info">
-                  🥛 نوع الحليب: ${escapeHTML(milk)}
-                </div>
+                ${renderItemCustomizations(item)}
 
                 <div class="item-price">
                   السعر:
-                  ${(Number(item.unit_price) *
-                    Number(item.quantity)).toFixed(2)}
+                  ${(unitPrice * quantity).toFixed(2)}
                   JD
                 </div>
               </div>
@@ -530,7 +603,7 @@ function renderOrders() {
           }).join("")}
         </div>
 
-        <h3>
+        <h3 class="total-price">
           المجموع: ${Number(order.total).toFixed(2)} JD
         </h3>
 
@@ -700,7 +773,7 @@ function subscribeToOrders() {
 }
 
 /* -------------------------
-   نظام الصوت الجديد
+   نظام الصوت
 ------------------------- */
 
 function createAudioContext() {
@@ -718,7 +791,6 @@ function createAudioContext() {
   return audioContext;
 }
 
-/* عند فتح لوحة الموظفين */
 function setupAudioForDashboard() {
   const context = createAudioContext();
 
@@ -736,11 +808,6 @@ function setupAudioForDashboard() {
   }
 }
 
-/*
-  مهم:
-  يتم استدعاء resume وتشغيل الموجة
-  مباشرة داخل لمسة المستخدم، وليس بعد انتظار.
-*/
 function unlockAudio(event) {
   if (event) {
     event.preventDefault();
@@ -768,10 +835,6 @@ function unlockAudio(event) {
     oscillator.start();
     oscillator.stop(context.currentTime + 0.22);
 
-    /*
-      استدعاء resume مباشرة من حدث اللمس
-      حتى يسمح Safari بتشغيل الصوت.
-    */
     const resumePromise = context.resume();
 
     resumePromise.then(() => {
@@ -805,7 +868,6 @@ function unlockAudio(event) {
   }
 }
 
-/* اللمس على أي مكان في الشاشة البنفسجية */
 $("audioGate").addEventListener(
   "pointerdown",
   unlockAudio
@@ -938,6 +1000,7 @@ function stopRinging() {
 }
 
 /* محاولة استعادة الصوت عند الرجوع إلى الصفحة */
+
 document.addEventListener("visibilitychange",() => {
   if (
     document.visibilityState === "visible" &&
