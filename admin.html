@@ -144,7 +144,7 @@ input {
 }
 #message {margin:10px 0}
 
-/* شاشة فتح الصوت عند الحاجة فقط */
+/* شاشة تفعيل الصوت */
 #audioGate {
   position:fixed;
   inset:0;
@@ -156,6 +156,7 @@ input {
   text-align:center;
   padding:25px;
   cursor:pointer;
+  touch-action:manipulation;
 }
 .audio-content {
   max-width:380px;
@@ -175,13 +176,12 @@ input {
 
 <body>
 
-<!-- تظهر فقط إذا منع المتصفح تشغيل الصوت تلقائياً -->
 <div id="audioGate" class="hidden">
   <div class="audio-content">
     <div class="audio-icon">🔔</div>
     <h2>DRP COFFEE</h2>
     <p style="color:#e4c9f5;line-height:1.8">
-      اضغط بأي مكان للمتابعة وتشغيل تنبيهات الطلبات
+      اضغط بأي مكان لتشغيل تنبيهات الطلبات
     </p>
     <p style="font-size:13px;color:#b98add">
       لمسة واحدة فقط
@@ -293,9 +293,7 @@ const statuses = {
   completed: "مكتمل"
 };
 
-/* -------------------------
-   واجهة الدخول والرسائل
-------------------------- */
+/* واجهة الدخول والرسائل */
 
 function showMessage(message, error=false) {
   $("message").textContent = message;
@@ -306,6 +304,7 @@ function showLogin() {
   $("loginSection").classList.remove("hidden");
   $("dashboard").classList.add("hidden");
   $("logoutBtn").classList.add("hidden");
+  $("audioGate").classList.add("hidden");
 }
 
 function showDashboard() {
@@ -314,9 +313,7 @@ function showDashboard() {
   $("logoutBtn").classList.remove("hidden");
 }
 
-/* -------------------------
-   التحقق من صلاحية الموظف
-------------------------- */
+/* التحقق من صلاحية الموظف */
 
 async function checkAdmin() {
   const {data:{user}} = await db.auth.getUser();
@@ -345,9 +342,7 @@ async function checkAdmin() {
   return true;
 }
 
-/* -------------------------
-   تسجيل الدخول
-------------------------- */
+/* تسجيل الدخول */
 
 $("loginForm").addEventListener("submit",async e => {
   e.preventDefault();
@@ -369,9 +364,7 @@ $("loginForm").addEventListener("submit",async e => {
   await startDashboard();
 });
 
-/* -------------------------
-   تسجيل الخروج
-------------------------- */
+/* تسجيل الخروج */
 
 $("logoutBtn").addEventListener("click",async () => {
   stopRinging();
@@ -388,9 +381,7 @@ $("logoutBtn").addEventListener("click",async () => {
   showLogin();
 });
 
-/* -------------------------
-   بدء لوحة الموظفين
-------------------------- */
+/* بدء لوحة الموظفين */
 
 async function startDashboard() {
   const allowed = await checkAdmin();
@@ -399,13 +390,13 @@ async function startDashboard() {
 
   showDashboard();
 
+  setupAudioForDashboard();
+
   await loadOrders(true);
   subscribeToOrders();
 }
 
-/* -------------------------
-   تحميل الطلبات
-------------------------- */
+/* تحميل الطلبات */
 
 async function loadOrders(initial=false) {
   showMessage("جاري تحميل الطلبات...");
@@ -445,18 +436,14 @@ async function loadOrders(initial=false) {
   showMessage("تم تحميل الطلبات بنجاح");
 }
 
-/* -------------------------
-   تحديد الطلبات غير المقبولة
-------------------------- */
+/* تحديد الطلبات الجديدة */
 
 function syncPendingOrders() {
-  const currentPending = new Set(
+  pendingOrderIds = new Set(
     orders
       .filter(order => order.status === "pending")
       .map(order => order.id)
   );
-
-  pendingOrderIds = currentPending;
 
   if (pendingOrderIds.size > 0) {
     startRinging();
@@ -465,9 +452,7 @@ function syncPendingOrders() {
   }
 }
 
-/* -------------------------
-   عرض الطلبات
-------------------------- */
+/* عرض الطلبات */
 
 function renderOrders() {
   $("newCount").textContent =
@@ -525,7 +510,6 @@ function renderOrders() {
 
             return `
               <div class="item-line">
-
                 <strong>
                   ${escapeHTML(item.product_name)}
                   × ${Number(item.quantity)}
@@ -541,7 +525,6 @@ function renderOrders() {
                     Number(item.quantity)).toFixed(2)}
                   JD
                 </div>
-
               </div>
             `;
           }).join("")}
@@ -552,7 +535,6 @@ function renderOrders() {
         </h3>
 
         <div class="actions">
-
           ${
             order.status === "pending"
             ? `
@@ -578,7 +560,6 @@ function renderOrders() {
               </button>
             `
           }
-
         </div>
 
       </article>
@@ -586,9 +567,7 @@ function renderOrders() {
   }).join("");
 }
 
-/* -------------------------
-   حماية النصوص المعروضة
-------------------------- */
+/* حماية النصوص */
 
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g,char => ({
@@ -600,9 +579,7 @@ function escapeHTML(value) {
   })[char]);
 }
 
-/* -------------------------
-   قبول الطلب
-------------------------- */
+/* قبول الطلب */
 
 async function acceptOrder(id) {
   const button = document.querySelector(
@@ -637,9 +614,7 @@ async function acceptOrder(id) {
 
 window.acceptOrder = acceptOrder;
 
-/* -------------------------
-   تحديث حالة الطلب
-------------------------- */
+/* تحديث حالة الطلب */
 
 async function updateStatus(id) {
   const select = $("status-" + id);
@@ -664,9 +639,7 @@ async function updateStatus(id) {
 
 window.updateStatus = updateStatus;
 
-/* -------------------------
-   استقبال الطلبات والتحديثات مباشرة
-------------------------- */
+/* استقبال الطلبات والتحديثات المباشرة */
 
 function subscribeToOrders() {
   if (channel) {
@@ -727,77 +700,127 @@ function subscribeToOrders() {
 }
 
 /* -------------------------
-   تشغيل الصوت تلقائياً
+   نظام الصوت الجديد
 ------------------------- */
 
-async function prepareAudio() {
+function createAudioContext() {
   const AudioContextClass =
     window.AudioContext || window.webkitAudioContext;
 
   if (!AudioContextClass) {
-    return false;
+    return null;
   }
 
-  try {
-    audioContext = audioContext || new AudioContextClass();
-
-    if (audioContext.state === "suspended") {
-      await audioContext.resume();
-    }
-
-    soundEnabled = audioContext.state === "running";
-
-    if (soundEnabled) {
-      $("audioGate").classList.add("hidden");
-
-      if (pendingOrderIds.size > 0) {
-        startRinging();
-      }
-    }
-
-    return soundEnabled;
-
-  } catch (error) {
-    console.log("Audio requires user interaction",error);
-    return false;
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
   }
+
+  return audioContext;
 }
 
-async function autoStartAudio() {
-  const enabled = await prepareAudio();
+/* عند فتح لوحة الموظفين */
+function setupAudioForDashboard() {
+  const context = createAudioContext();
 
-  if (!enabled) {
+  if (!context) {
+    showMessage("هذا المتصفح لا يدعم تشغيل التنبيهات الصوتية.",true);
+    return;
+  }
+
+  if (context.state === "running") {
+    soundEnabled = true;
+    $("audioGate").classList.add("hidden");
+  } else {
+    soundEnabled = false;
     $("audioGate").classList.remove("hidden");
   }
 }
 
-/* لمسة واحدة فقط إذا منع Safari التشغيل التلقائي */
-async function unlockAudio() {
-  const enabled = await prepareAudio();
+/*
+  مهم:
+  يتم استدعاء resume وتشغيل الموجة
+  مباشرة داخل لمسة المستخدم، وليس بعد انتظار.
+*/
+function unlockAudio(event) {
+  if (event) {
+    event.preventDefault();
+  }
 
-  if (enabled) {
-    $("audioGate").classList.add("hidden");
+  const context = createAudioContext();
 
-    showMessage("تم تشغيل تنبيهات الطلبات الصوتية ✓");
+  if (!context) {
+    showMessage("تعذر إنشاء نظام الصوت في هذا المتصفح.",true);
+    return;
+  }
 
-    if (pendingOrderIds.size > 0) {
-      startRinging();
-    }
+  try {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.value = 880;
+
+    gain.gain.value = 0.18;
+
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.22);
+
+    /*
+      استدعاء resume مباشرة من حدث اللمس
+      حتى يسمح Safari بتشغيل الصوت.
+    */
+    const resumePromise = context.resume();
+
+    resumePromise.then(() => {
+      if (context.state === "running") {
+        soundEnabled = true;
+
+        $("audioGate").classList.add("hidden");
+
+        showMessage("تم تشغيل الصوت بنجاح ✓");
+
+        if (pendingOrderIds.size > 0) {
+          startRinging();
+        }
+      } else {
+        soundEnabled = false;
+        $("audioGate").classList.remove("hidden");
+        showMessage("لم يتم تفعيل الصوت. اضغط مرة أخرى.",true);
+      }
+    }).catch(error => {
+      console.log("Audio resume error:",error);
+
+      soundEnabled = false;
+      $("audioGate").classList.remove("hidden");
+
+      showMessage("تعذر تشغيل الصوت. حاول الضغط مرة أخرى.",true);
+    });
+
+  } catch (error) {
+    console.log("Audio unlock error:",error);
+    $("audioGate").classList.remove("hidden");
   }
 }
 
+/* اللمس على أي مكان في الشاشة البنفسجية */
 $("audioGate").addEventListener(
   "pointerdown",
   unlockAudio
 );
 
-/* -------------------------
-   نغمة التنبيه
-------------------------- */
+/* نغمة التنبيه */
 
 function playAlert() {
   if (!soundEnabled || !audioContext) return;
-  if (audioContext.state !== "running") return;
+
+  if (audioContext.state !== "running") {
+    soundEnabled = false;
+    $("audioGate").classList.remove("hidden");
+    return;
+  }
 
   const start = audioContext.currentTime;
 
@@ -862,9 +885,7 @@ function playAlert() {
   });
 }
 
-/* -------------------------
-   إيقاف الأصوات الحالية
-------------------------- */
+/* إيقاف الأصوات الحالية */
 
 function stopCurrentSounds() {
   activeOscillators.forEach(oscillator => {
@@ -876,9 +897,7 @@ function stopCurrentSounds() {
   activeOscillators.clear();
 }
 
-/* -------------------------
-   استمرار الرنين حتى قبول الطلبات
-------------------------- */
+/* استمرار الرنين حتى قبول جميع الطلبات */
 
 function startRinging() {
   if (!soundEnabled || !audioContext) return;
@@ -894,6 +913,8 @@ function startRinging() {
   ringingInterval = setInterval(() => {
     if (
       !soundEnabled ||
+      !audioContext ||
+      audioContext.state !== "running" ||
       pendingOrderIds.size === 0
     ) {
       stopRinging();
@@ -916,22 +937,31 @@ function stopRinging() {
   stopCurrentSounds();
 }
 
-/* -------------------------
-   تحديث يدوي
-------------------------- */
+/* محاولة استعادة الصوت عند الرجوع إلى الصفحة */
+document.addEventListener("visibilitychange",() => {
+  if (
+    document.visibilityState === "visible" &&
+    audioContext &&
+    audioContext.state === "running"
+  ) {
+    soundEnabled = true;
+
+    if (pendingOrderIds.size > 0) {
+      startRinging();
+    }
+  }
+});
+
+/* تحديث يدوي */
 
 $("refreshBtn").addEventListener(
   "click",
   () => loadOrders()
 );
 
-/* -------------------------
-   بدء الموقع
-------------------------- */
+/* بدء الموقع */
 
 (async function init() {
-  await autoStartAudio();
-
   const {data:{session}} = await db.auth.getSession();
 
   if (session) {
